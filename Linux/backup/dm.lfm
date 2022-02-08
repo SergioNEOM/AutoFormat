@@ -1,0 +1,36 @@
+object DM1: TDM1
+  OldCreateOrder = False
+  Height = 427
+  HorizontalOffset = 446
+  VerticalOffset = 314
+  Width = 691
+  PPI = 96
+  object SQLite3Connection1: TSQLite3Connection
+    Connected = False
+    LoginPrompt = False
+    KeepConnection = False
+    Transaction = SQLTransaction1
+    CharSet = 'UTF-8'
+    left = 72
+    top = 24
+  end
+  object SQLQuery1: TSQLQuery
+    FieldDefs = <>
+    Database = SQLite3Connection1
+    Transaction = SQLTransaction1
+    Params = <>
+    left = 72
+    top = 112
+  end
+  object SQLTransaction1: TSQLTransaction
+    Active = False
+    Database = SQLite3Connection1
+    left = 208
+    top = 24
+  end
+  object DataSource1: TDataSource
+    DataSet = SQLQuery1
+    left = 72
+    top = 184
+  end
+end
