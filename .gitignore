@@ -1,0 +1,11 @@
+./Win/*.exe
+./Linux/aformat1
+./Win/backup
+./Win/lib
+./Linux/backup
+./Linux/lib
+./Win/backup/*
+./Win/lib/*
+./Linux/backup/*
+./Linux/lib/*
+
