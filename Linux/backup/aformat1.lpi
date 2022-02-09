@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="5">
+    <Units Count="8">
       <Unit0>
         <Filename Value="aformat1.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -57,6 +57,7 @@
         <Filename Value="loginfrm.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="LoginForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="LoginFrm"/>
       </Unit3>
@@ -64,9 +65,28 @@
         <Filename Value="listfrm.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="ListForm1"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ListFrm"/>
       </Unit4>
+      <Unit5>
+        <Filename Value="getfilefrm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="GetFileForm1"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="GetFileFrm"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="commonunit.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="projectfrm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="ProjectForm"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="ProjectFrm"/>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -79,6 +99,9 @@
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
+      <Debugging>
+        <DebugInfoType Value="dsDwarf2Set"/>
+      </Debugging>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>

@@ -4,22 +4,37 @@ object MainForm1: TMainForm1
   Top = 164
   Width = 626
   Caption = 'Auto Format'
+  ClientHeight = 444
+  ClientWidth = 626
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow
   LCLVersion = '2.0.6.0'
+  object ListBox1: TListBox
+    Left = 16
+    Height = 368
+    Top = 56
+    Width = 184
+    ItemHeight = 0
+    ParentFont = False
+    ScrollWidth = 182
+    TabOrder = 0
+    TopIndex = -1
+  end
   object ActionList1: TActionList
-    Images = ImageList1
+    Images = ActionImages
     left = 40
     top = 280
     object ChangeUserAction: TAction
+      Category = 'app'
       Caption = 'Сменить пользователя'
       Hint = 'Change current user'
       ImageIndex = 2
       OnExecute = ChangeUserActionExecute
     end
     object ExitAppAction: TAction
+      Category = 'app'
       Caption = 'Exit'
       Hint = 'Exit from app'
       ImageIndex = 0
@@ -36,10 +51,23 @@ object MainForm1: TMainForm1
       OnExecute = OpenPrjActionExecute
       ShortCut = 16498
     end
+    object FormatAction: TAction
+      Category = 'document'
+      Caption = 'FormatAction'
+      OnExecute = FormatActionExecute
+    end
+    object ClosePrjAction: TAction
+      Category = 'project'
+      Caption = 'ClosePrjAction'
+    end
+    object DelPrjAction: TAction
+      Category = 'project'
+      Caption = 'DelPrjAction'
+    end
   end
-  object ImageList1: TImageList
+  object ActionImages: TImageList
     left = 40
-    top = 328
+    top = 352
     Bitmap = {
       4C69030000001000000010000000A8CDE0FFB7D6E7FF95B8D3FF4571A2FF4063
       82FF5E83A2FF86AFCBFFB5D5E9FF9EC8E3FFA5C3DDFF81A5C7FF6A97C0FF5F96
@@ -141,28 +169,46 @@ object MainForm1: TMainForm1
     }
   end
   object MainMenu1: TMainMenu
-    Images = ImageList1
-    left = 24
+    Images = ActionImages
+    left = 26
     top = 8
     object MenuItem1: TMenuItem
-      Caption = 'Application'
+      Caption = 'Приложение'
       object MenuItem2: TMenuItem
         Action = ChangeUserAction
-      end
-      object N1: TMenuItem
-        Caption = '-'
-      end
-      object MenuItem3: TMenuItem
-        Action = NewPrjAction
-      end
-      object MenuItem4: TMenuItem
-        Action = OpenPrjAction
       end
       object N2: TMenuItem
         Caption = '-'
       end
       object MenuItem5: TMenuItem
         Action = ExitAppAction
+      end
+    end
+    object MenuItem9: TMenuItem
+      Caption = 'Проект'
+      object MenuItem8: TMenuItem
+        Action = NewPrjAction
+      end
+      object N1: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem10: TMenuItem
+        Action = OpenPrjAction
+      end
+      object MenuItem3: TMenuItem
+        Action = ClosePrjAction
+      end
+      object N3: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem4: TMenuItem
+        Action = DelPrjAction
+      end
+    end
+    object MenuItem6: TMenuItem
+      Caption = 'Документ'
+      object MenuItem7: TMenuItem
+        Action = FormatAction
       end
     end
   end

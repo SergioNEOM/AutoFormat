@@ -20,17 +20,72 @@ object DM1: TDM1
     Transaction = SQLTransaction1
     Params = <>
     left = 72
-    top = 112
+    top = 224
   end
   object SQLTransaction1: TSQLTransaction
     Active = False
     Database = SQLite3Connection1
-    left = 208
-    top = 24
+    left = 72
+    top = 176
   end
   object DataSource1: TDataSource
     DataSet = SQLQuery1
     left = 72
+    top = 280
+  end
+  object Blocks: TSQLQuery
+    FieldDefs = <>
+    Database = SQLite3Connection1
+    Transaction = SQLTransaction1
+    Params = <>
+    left = 264
+    top = 232
+  end
+  object Blocks_DS: TDataSource
+    DataSet = Blocks
+    left = 264
+    top = 280
+  end
+  object SQLScript1: TSQLScript
+    DataBase = SQLite3Connection1
+    Transaction = TranScript
+    UseDollarString = False
+    Directives.Strings = (
+      'SET TERM'
+      'COMMIT WORK'
+      'COMMIT RETAIN'
+      'COMMIT'
+      '#IFDEF'
+      '#IFNDEF'
+      '#ELSE'
+      '#ENDIF'
+      '#DEFINE'
+      '#UNDEF'
+      '#UNDEFINE'
+    )
+    Terminator = ';'
+    CommentsinSQL = True
+    UseSetTerm = True
+    UseCommit = True
+    UseDefines = True
+    left = 352
+    top = 24
+  end
+  object TranScript: TSQLTransaction
+    Active = False
+    Database = SQLite3Connection1
+    left = 352
+    top = 80
+  end
+  object SQLTransactionMain: TSQLTransaction
+    Active = False
+    Database = SQLite3Connection1
+    left = 176
+    top = 24
+  end
+  object SQLTransaction3: TSQLTransaction
+    Active = False
+    left = 264
     top = 184
   end
 end

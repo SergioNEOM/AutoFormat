@@ -6,52 +6,55 @@ interface
 
 uses
   Classes, SysUtils, sqlite3conn, sqldb, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ActnList, Menus, DM;
-
-const
-  AppHeader = 'Auto Format';
+  StdCtrls, ActnList, Menus, JSONPropStorage, IniPropStorage, DM, CommonUnit;
 
 type
-
-  TUserRec = class
-    id     : integer;
-    name   : string;
-    super  : boolean;
-    project: integer;
-    public
-      procedure Clear;
-  end;
 
   { TMainForm1 }
 
   TMainForm1 = class(TForm)
+    DelPrjAction: TAction;
+    ClosePrjAction: TAction;
+    FormatAction: TAction;
+    ListBox1: TListBox;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
+    MenuItem10: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
-    MenuItem5: TMenuItem;
-    N2: TMenuItem;
+    N3: TMenuItem;
     N1: TMenuItem;
+    MenuItem5: TMenuItem;
+    MenuItem6: TMenuItem;
+    MenuItem7: TMenuItem;
+    MenuItem8: TMenuItem;
+    MenuItem9: TMenuItem;
+    N2: TMenuItem;
     OpenPrjAction: TAction;
     NewPrjAction: TAction;
     ExitAppAction: TAction;
     ChangeUserAction: TAction;
     ActionList1: TActionList;
-    ImageList1: TImageList;
+    ActionImages: TImageList;
     procedure ChangeUserActionExecute(Sender: TObject);
     procedure ExitAppActionExecute(Sender: TObject);
+    procedure FormatActionExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure OpenPrjActionExecute(Sender: TObject);
   private
     AppStarted : boolean;
-    procedure FillConfig;
+    function GetConfigFile : boolean;
+    function GetConfigValues : boolean;
   public
-    DBFile    : string;
+    DBFile,
+    ConfigFile   : string;
     CurrentUser  : TUserRec;
+    CurrentBlock : TBlock;
     procedure ShowLogin;
+    function Format(prj: integer; TargetFile: Widestring): boolean;
   end;
 
 var
@@ -60,24 +63,16 @@ var
 implementation
 
 {$R *.lfm}
-uses StrUtils, LCLType,
-  LoginFrm, ListFrm;
+uses StrUtils, LCLType, LoginFrm, ListFrm, GetFileFrm, IniFiles;
 
-procedure TUserRec.Clear;
-begin
-  id := -1;
-  name := '';
-  super := False;
-  project := -1;
-end;
-
-//--------------------
 
 procedure TMainForm1.FormCreate(Sender: TObject);
 begin
   AppStarted:=True;
   CurrentUser := TUserRec.Create;
   CurrentUser.Clear;
+  CurrentBlock := TBlock.Create;
+  CurrentBlock.Clear;
 end;
 
 procedure TMainForm1.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -108,17 +103,69 @@ begin
   Close;
 end;
 
+procedure TMainForm1.FormatActionExecute(Sender: TObject);
+begin
+  Format(1,ExpandFileName('Lorem ipsum.docx'));
+end;
+
 procedure TMainForm1.FormShow(Sender: TObject);
 begin
   if AppStarted then
   begin
-    AppStarted:=False;
-    FillConfig;
+    AppStarted:=False; // no more pass
+    //---
+    if not GetConfigFile then
+      with TGetFileForm1.Create(self) do
+      try
+        if ShowModal<>mrOK then
+        begin
+          Application.MessageBox('Не найден файл конфигурации! '+#13#10+'Приложение будет закрыто.','Ошибка',MB_ICONERROR+MB_OK);
+          Halt(999);
+        end;
+        ConfigFile:=FileNameEdit1.FileName;
+      finally
+        Free;
+      end;
+    //---
+    if not GetConfigValues then
+    begin
+      Application.MessageBox('Недостаточно информации в файле конфигурации! '+#13#10+'Приложение будет закрыто.','Ошибка',MB_ICONERROR+MB_OK);
+      Halt(99);
+    end;
     //---
     DM1.DBConnect;
     //---
     ShowLogin;
   end;
+end;
+
+function TMainForm1.GetConfigFile : boolean;
+begin
+  Result := False;
+  ConfigFile :=  Application.GetOptionValue('c','config');
+  if IsEmptyStr(ConfigFile,[' ']) then
+    ConfigFile := ExtractFilePath(Application.ExeName)+ExtractFileName(Application.ExeName)+'.ini';
+  //
+  ConfigFile:= ExpandFileName(ConfigFile);
+  if FileExists(ConfigFile) then Result := True;
+end;
+
+function TMainForm1.GetConfigValues : boolean;
+var
+  cofi : TIniFile;
+begin
+  Result := False;
+  //---
+  DBFile :=  Application.GetOptionValue('d','dbfile');
+  if IsEmptyStr(DBFile,[' ']) or not FileExists(ExpandFileName(DBFile)) then
+  begin
+    // не передан как параметр или указан несуществующий файл БД, значит берем из конфиг-файла
+    cofi := TIniFile.Create(ConfigFile);
+    DBFile := ExpandFileName(cofi.ReadString('db','DBFile',''));
+    if not FileExists(DBFile) then Exit;
+  end;
+  //...
+  Result := True;
 end;
 
 procedure TMainForm1.OpenPrjActionExecute(Sender: TObject);
@@ -149,19 +196,6 @@ begin
   end;
 end;
 
-procedure TMainForm1.FillConfig;
-begin
-  DBFile :=  Application.GetOptionValue('d','dbfile');
-  if IsEmptyStr(DBFile,[' ']) then
-    DBFile := ExtractFilePath(Application.ExeName)+ExtractFileName(Application.ExeName)+'.db';
-  //
-  DBFile:= ExpandFileName(DBFile);
-  if not FileExists(DBFile) then
-  begin
-    Application.MessageBox('Не найден файл БД! '+#13#10+'Приложение будет закрыто.','Ошибка',MB_ICONERROR+MB_OK);
-    Close;
-  end;
-end;
 
 procedure TMainForm1.ShowLogin;
 begin
@@ -175,6 +209,17 @@ begin
   self.Caption:= AppHeader + ' : ' + CurrentUser.name;
   if CurrentUser.super then  self.Caption:= self.Caption + ' (***)';
 end;
+
+
+function TMainForm1.Format(prj: integer; TargetFile: WideString): boolean;
+{const
+  prefix = '{<block';
+  suffix = '>}';}
+begin
+  ShowMessage('Format: '+TargetFile);
+  Result := True;
+end;
+
 
 end.
 

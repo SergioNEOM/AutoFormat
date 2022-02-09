@@ -7,8 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, mainform, DM, LoginFrm
-  { you can add units after this };
+  Forms, mainform, DM, LoginFrm, ListFrm, GetFileFrm, ProjectFrm;
 
 {$R *.res}
 
@@ -18,6 +17,7 @@ begin
   Application.Initialize;
   Application.CreateForm(TMainForm1, MainForm1);
   Application.CreateForm(TDM1, DM1);
+  Application.CreateForm(TProjectForm, ProjectForm);
   Application.Run;
 end.
 
