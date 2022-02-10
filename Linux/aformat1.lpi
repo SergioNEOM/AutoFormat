@@ -73,17 +73,20 @@
         <Filename Value="getfilefrm.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="GetFileForm1"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="GetFileFrm"/>
       </Unit5>
       <Unit6>
         <Filename Value="commonunit.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="CommonUnit"/>
       </Unit6>
       <Unit7>
         <Filename Value="projectfrm.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="ProjectForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ProjectFrm"/>
       </Unit7>

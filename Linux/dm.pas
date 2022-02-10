@@ -26,10 +26,15 @@ type
 
   public
     function DBConnect : boolean;
+    //-- users
     function CheckUser(login,password:string) : integer; // res > 0 - OK;  -1 - wrong login/password; -999 - DB not connected
+    //-- blocks
     procedure BlocksOpen;
     function FillBlockNames: TStrings;
-    function AddProject : integer;
+    //-- projects
+    function AddProject(Info: string='') : integer;
+    function GetProject(prid : integer) : boolean;
+    function GetProjectFields:boolean;
   end;
 
 var
@@ -99,21 +104,23 @@ end;
 
 function TDM1.FillBlockNames: TStrings;
 begin
-  Result := TStrings.Create;
+  Result := nil;
+  //Result := TStrings.Create;
 end;
 
-function TDM1.AddProject : integer;
+function TDM1.AddProject(Info: string='') : integer;
 begin
   Result := -1;
   //TODO:  SQLite3 only (twin operation) !!!!
-  SQLScript1.Script.Clear;
-  SQLScript1.Script.Add('INSERT INTO projects (prjdate) VALUES (CURRENT_DATE);');
-  try
-    if not TranScript.Active then TranScript.StartTransaction;
-    SQLScript1.Execute;
-    if TranScript.Active then TranScript.Commit;
-    with SQLQuery1 do
+  with SQLQuery1 do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Text := 'INSERT INTO projects (prjdate,prjinfo) VALUES (CURRENT_DATE,:info);';
+    SQLQuery1.ParamByName('info').AsString:=Info;
     try
+      ExecSQL;
+      if SQLTransaction.Active then SQLTransaction.Commit;
       Close;
       SQL.Text:='SELECT last_insert_rowid() as LIR';
       try
@@ -126,15 +133,49 @@ begin
         Exit;
       end;
     finally
-      if SQLTransaction1.Active then SQLTransaction1.Rollback;
       Close;
     end;
-  except
-    if TranScript.Active then TranScript.Rollback;
-    Exit;
   end;
 
   //TODO:  if PostgreSQL need use 'INSERT ... RETURNING id'  in one query!!!
+end;
+
+function TDM1.GetProject(prid : integer) : boolean;
+begin
+  Result := False;
+  if prid <= 0 then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    //TODO: SQLite SQL script !!
+    SQL.Text:='SELECT p.id,p.prjdate,p.prjinfo,length(t.tmp) as lentmp FROM projects p, templates t WHERE p.tmp_id=t.id and p.id=:prid;';
+    ParamByName('prid').AsInteger:=prid;
+    try
+      Open;
+      if RecordCount<1 then Exit;
+      First;
+      Result := GetProjectFields;
+    except
+      Exit;
+    end;
+  finally
+    Close;
+  end;
+end;
+
+function TDM1.GetProjectFields : boolean;
+begin
+  try
+    MainForm1.CurrentProject.SetPrj(
+      SQLQuery1.FieldByName('id').AsInteger,
+      SQLQuery1.FieldByName('prjdate').AsDateTime,
+      SQLQuery1.FieldByName('prjinfo').AsString,
+      SQLQuery1.FieldByName('lentmp').AsInteger>0  //TODO: >length('{<Block>}') - ?
+    );
+    Result := True;
+  except
+    Result := False;
+  end;
 end;
 
 end.

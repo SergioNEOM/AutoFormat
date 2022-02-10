@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, sqlite3conn, sqldb, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ActnList, Menus, JSONPropStorage, IniPropStorage, DM, CommonUnit;
+  StdCtrls, ActnList, Menus, JSONPropStorage, IniPropStorage, CommonUnit, DM;
 
 type
 
@@ -51,9 +51,10 @@ type
     function GetConfigValues : boolean;
   public
     DBFile,
-    ConfigFile   : string;
-    CurrentUser  : TUserRec;
-    CurrentBlock : TBlock;
+    ConfigFile               : string;
+    CurrentUser    : TUserRec;
+    CurrentBlock   : TBlock;
+    CurrentProject : TPrjRec;
     procedure ShowLogin;
     function Format(prj: integer; TargetFile: Widestring): boolean;
   end;
@@ -74,6 +75,8 @@ begin
   CurrentUser.Clear;
   CurrentBlock := TBlock.Create;
   CurrentBlock.Clear;
+  CurrentProject := TPrjRec.Create;
+  CurrentProject.Clear;
 end;
 
 procedure TMainForm1.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -140,15 +143,6 @@ begin
   end;
 end;
 
-procedure TMainForm1.NewPrjActionExecute(Sender: TObject);
-begin
-  with TProjectForm.Create(self,-1) do
-  try
-    if ShowModal=mrOk then showmessage('project created');
-  finally
-    Free;
-  end;
-end;
 
 function TMainForm1.GetConfigFile : boolean;
 begin
@@ -179,6 +173,25 @@ begin
   Result := True;
 end;
 
+procedure TMainForm1.NewPrjActionExecute(Sender: TObject);
+var
+  n : integer;
+  v : string ;
+begin
+  v := '';
+  if InputQuery('Новый проект','Укажите описание проекта'+#13#10+'...или откажитесь от создания (кнопка "Cancel")',v)  then
+  begin
+    n := DM1.AddProject(v);
+    if n<=0 then
+    begin
+      Application.MessageBox('Не удалось добавить новый проект','ERROR',MB_ICONASTERISK+MB_OK);
+      Exit;
+    end;
+  end;
+  OpenPrjAction.Execute;
+end;
+
+
 procedure TMainForm1.OpenPrjActionExecute(Sender: TObject);
 begin
   if CurrentUser.id <=0 then Exit;
@@ -186,12 +199,13 @@ begin
   with DM1.SQLQuery1 do
   begin
     Close;
-    SQL.Text:='SELECT * FROM projects where user_id=:u';
+    SQL.Text:='SELECT p.id,p.prjdate,p.prjinfo,length(t.tmp) as lentmp FROM projects p, templates t WHERE p.tmp_id=t.id and p.user_id=:u';
     ParamByName('u').Value:=CurrentUser.id;
     try
       Open;
     except
       Application.MessageBox('projects list error','ERROR',MB_ICONERROR+MB_OK);
+      Exit;
     end;
   end;
   //--
@@ -199,12 +213,28 @@ begin
   try
      if ShowModal = mrOk then
      begin
-       CurrentUser.project:=DM1.DataSource1.DataSet.FieldByName('id').AsInteger;
        // project parameters...
+       if not DM1.GetProjectFields then
+       begin
+         MainForm1.CurrentProject.Clear;
+         Application.MessageBox('error save projects data','ERROR',MB_ICONERROR+MB_OK);
+         Exit;
+       end;
      end;
   finally
     Free;
   end;
+  //---
+  if  MainForm1.CurrentProject.id <=0 then Exit;
+
+//  with TProjectForm.Create(self,MainForm1.CurrentProject.id) do
+  with TProjectForm.Create(self) do
+  try
+    if ShowModal=mrOk then showmessage('project saved');
+  finally
+    Free;
+  end;
+
 end;
 
 

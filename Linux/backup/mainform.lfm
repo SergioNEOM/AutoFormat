@@ -43,6 +43,7 @@ object MainForm1: TMainForm1
     object NewPrjAction: TAction
       Category = 'project'
       Caption = 'NewPrjAction'
+      OnExecute = NewPrjActionExecute
     end
     object OpenPrjAction: TAction
       Category = 'project'
