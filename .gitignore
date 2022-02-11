@@ -1,3 +1,5 @@
+# gitignore file
+#
 #Lazarus compiler-generated binaries (safe to delete)
 *.exe
 *.dll
@@ -28,17 +30,4 @@ lib/
 
 # Application bundle for Mac OS
 *.app/
-
-# Win folder
-Win/*.exe
-Win/*.dll
-Win/backup/
-Win/lib/
-
-# Linux folder
-Linux/*.so
-Linux/*.dylib
-Linux/aformat1
-Linux/backup/
-Linux/lib/
 
