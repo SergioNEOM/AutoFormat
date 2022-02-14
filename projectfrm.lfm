@@ -1,0 +1,149 @@
+object ProjectForm: TProjectForm
+  Left = 398
+  Height = 624
+  Top = 201
+  Width = 849
+  Caption = 'Project'
+  ClientHeight = 624
+  ClientWidth = 849
+  OnCreate = FormCreate
+  LCLVersion = '2.0.6.0'
+  object TopPanel: TPanel
+    Left = 0
+    Height = 136
+    Top = 0
+    Width = 849
+    Align = alTop
+    BevelInner = bvRaised
+    ClientHeight = 136
+    ClientWidth = 849
+    TabOrder = 0
+    object PrjInfoLabel: TLabel
+      Left = 8
+      Height = 64
+      Top = 16
+      Width = 832
+      Anchors = [akTop, akLeft, akRight]
+      AutoSize = False
+      Caption = 'Project info'
+      Font.Color = clMaroon
+      Font.Height = -16
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object Button1: TButton
+      Left = 24
+      Height = 25
+      Top = 96
+      Width = 112
+      Caption = 'Change tmp'
+      TabOrder = 0
+    end
+    object Button2: TButton
+      Left = 168
+      Height = 25
+      Top = 96
+      Width = 144
+      Caption = 'Re-scan'
+      TabOrder = 1
+    end
+  end
+  object BottomPanel: TPanel
+    Left = 0
+    Height = 60
+    Top = 564
+    Width = 849
+    Align = alBottom
+    BevelInner = bvRaised
+    ClientHeight = 60
+    ClientWidth = 849
+    TabOrder = 1
+    object OkButton: TBitBtn
+      Left = 704
+      Height = 40
+      Top = 8
+      Width = 120
+      Caption = 'Сохранить'
+      Default = True
+      Kind = bkOK
+      ModalResult = 1
+      TabOrder = 0
+    end
+    object CancelButton: TBitBtn
+      Left = 520
+      Height = 40
+      Top = 8
+      Width = 120
+      Cancel = True
+      DefaultCaption = True
+      Kind = bkCancel
+      ModalResult = 2
+      TabOrder = 1
+    end
+  end
+  object CentralPanel: TPanel
+    Left = 0
+    Height = 428
+    Top = 136
+    Width = 849
+    Align = alClient
+    BevelInner = bvLowered
+    ClientHeight = 428
+    ClientWidth = 849
+    TabOrder = 2
+    object SpeedButton1: TSpeedButton
+      Left = 40
+      Height = 40
+      Top = 10
+      Width = 40
+      Caption = '+'
+    end
+    object SpeedButton2: TSpeedButton
+      Left = 90
+      Height = 40
+      Top = 10
+      Width = 40
+      Caption = '...'
+    end
+    object SpeedButton3: TSpeedButton
+      Left = 140
+      Height = 40
+      Top = 10
+      Width = 40
+      Caption = '-'
+    end
+    object SpeedButton4: TSpeedButton
+      Left = 260
+      Height = 40
+      Top = 60
+      Width = 40
+      Caption = '^'
+    end
+    object SpeedButton5: TSpeedButton
+      Left = 260
+      Height = 40
+      Top = 106
+      Width = 40
+      Caption = 'v'
+    end
+    object ListBox1: TListBox
+      Left = 30
+      Height = 350
+      Top = 60
+      Width = 216
+      ItemHeight = 0
+      ScrollWidth = 214
+      TabOrder = 0
+      TopIndex = -1
+    end
+    object StaticText1: TStaticText
+      Left = 276
+      Height = 145
+      Top = 181
+      Width = 556
+      Caption = 'StaticText1'
+      TabOrder = 1
+    end
+  end
+end

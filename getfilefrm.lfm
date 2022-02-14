@@ -1,0 +1,57 @@
+object GetFileForm1: TGetFileForm1
+  Left = 538
+  Height = 282
+  Top = 375
+  Width = 450
+  Caption = 'Укажите файл'
+  ClientHeight = 282
+  ClientWidth = 450
+  LCLVersion = '2.0.6.0'
+  object Panel1: TPanel
+    Left = 0
+    Height = 60
+    Top = 222
+    Width = 450
+    Align = alBottom
+    BevelInner = bvRaised
+    ClientHeight = 60
+    ClientWidth = 450
+    TabOrder = 0
+    object BitBtn1: TBitBtn
+      Left = 168
+      Height = 40
+      Top = 8
+      Width = 120
+      Anchors = [akTop, akRight]
+      Cancel = True
+      DefaultCaption = True
+      Kind = bkCancel
+      ModalResult = 2
+      TabOrder = 0
+    end
+    object BitBtn2: TBitBtn
+      Left = 312
+      Height = 40
+      Top = 8
+      Width = 120
+      Anchors = [akTop, akRight]
+      Default = True
+      DefaultCaption = True
+      Kind = bkOK
+      ModalResult = 1
+      TabOrder = 1
+    end
+  end
+  object FileNameEdit1: TFileNameEdit
+    Left = 51
+    Height = 33
+    Top = 39
+    Width = 221
+    FilterIndex = 0
+    HideDirectories = False
+    ButtonWidth = 23
+    NumGlyphs = 1
+    MaxLength = 0
+    TabOrder = 1
+  end
+end
