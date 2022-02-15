@@ -39,12 +39,13 @@ begin
   inherited Create(TheOwner);
   self.Caption:=FormHeader + Trim(ListName);
   DBGrid1.DataSource := DS;
-  if Assigned(DS) and (id > 0) and DS.DataSet.Locate('id',id,[]) then
-    Current_id := id
-  else
+  if not Assigned(DS) or (id > 0) then
+  begin
     // no records in DS
     OkButton.Enabled:=False;
     Current_id:=-1;
+  end;
+  if DS.DataSet.Locate('id',id,[]) then Current_id := id
 end;
 
 end.

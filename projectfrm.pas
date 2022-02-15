@@ -13,22 +13,21 @@ type
   { TProjectForm }
 
   TProjectForm = class(TForm)
+    Button3: TButton;
+    CentralPanel: TPanel;
+    ComboBox1: TComboBox;
+    ListBox1: TListBox;
     OkButton: TBitBtn;
     CancelButton: TBitBtn;
-    Button1: TButton;
-    Button2: TButton;
     BottomPanel: TPanel;
-    CentralPanel: TPanel;
-    ListBox1: TListBox;
+    OpenDialog1: TOpenDialog;
     PrjInfoLabel: TLabel;
     SpeedButton1: TSpeedButton;
     SpeedButton2: TSpeedButton;
-    SpeedButton3: TSpeedButton;
-    SpeedButton4: TSpeedButton;
-    SpeedButton5: TSpeedButton;
     StaticText1: TStaticText;
     TopPanel: TPanel;
     procedure FormCreate(Sender: TObject);
+    procedure SpeedButton1Click(Sender: TObject);
   private
 
   public
@@ -68,10 +67,23 @@ begin
   begin
     // no current project ?
     // make sure:  will be no mistakes
+    PrjInfoLabel.Caption:='Ошибка!!!'#13#10' Нет текущего проекта!';
     TopPanel.Enabled:=False;
     CentralPanel.Enabled:=False;
     OkButton.Enabled:=False;
   end;
+end;
+
+procedure TProjectForm.SpeedButton1Click(Sender: TObject);
+var
+  t : integer;
+begin
+  if not OpenDialog1.Execute then Exit;
+  t := DM1.InsertTemplate(
+        MainForm1.CurrentProject.id,
+        InputBox('Ввод данных','Введите описание шаблона',''),
+        OpenDialog1.FileName);
+  showmessage(inttostr(t));
 end;
 
 function TProjectForm.AddProject: integer;

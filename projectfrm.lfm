@@ -32,21 +32,29 @@ object ProjectForm: TProjectForm
       ParentColor = False
       ParentFont = False
     end
-    object Button1: TButton
-      Left = 24
-      Height = 25
-      Top = 96
-      Width = 112
-      Caption = 'Change tmp'
+    object ComboBox1: TComboBox
+      Left = 32
+      Height = 33
+      Top = 88
+      Width = 240
+      ItemHeight = 0
       TabOrder = 0
+      Text = 'ComboBox1'
     end
-    object Button2: TButton
-      Left = 168
-      Height = 25
-      Top = 96
-      Width = 144
-      Caption = 'Re-scan'
-      TabOrder = 1
+    object SpeedButton1: TSpeedButton
+      Left = 280
+      Height = 32
+      Top = 88
+      Width = 31
+      Caption = '+'
+      OnClick = SpeedButton1Click
+    end
+    object SpeedButton2: TSpeedButton
+      Left = 320
+      Height = 31
+      Top = 88
+      Width = 32
+      Caption = '-'
     end
   end
   object BottomPanel: TPanel
@@ -92,45 +100,10 @@ object ProjectForm: TProjectForm
     ClientHeight = 428
     ClientWidth = 849
     TabOrder = 2
-    object SpeedButton1: TSpeedButton
-      Left = 40
-      Height = 40
-      Top = 10
-      Width = 40
-      Caption = '+'
-    end
-    object SpeedButton2: TSpeedButton
-      Left = 90
-      Height = 40
-      Top = 10
-      Width = 40
-      Caption = '...'
-    end
-    object SpeedButton3: TSpeedButton
-      Left = 140
-      Height = 40
-      Top = 10
-      Width = 40
-      Caption = '-'
-    end
-    object SpeedButton4: TSpeedButton
-      Left = 260
-      Height = 40
-      Top = 60
-      Width = 40
-      Caption = '^'
-    end
-    object SpeedButton5: TSpeedButton
-      Left = 260
-      Height = 40
-      Top = 106
-      Width = 40
-      Caption = 'v'
-    end
     object ListBox1: TListBox
       Left = 30
-      Height = 350
-      Top = 60
+      Height = 398
+      Top = 12
       Width = 216
       ItemHeight = 0
       ScrollWidth = 214
@@ -138,12 +111,24 @@ object ProjectForm: TProjectForm
       TopIndex = -1
     end
     object StaticText1: TStaticText
-      Left = 276
-      Height = 145
-      Top = 181
+      Left = 264
+      Height = 348
+      Top = 12
       Width = 556
       Caption = 'StaticText1'
       TabOrder = 1
     end
+    object Button3: TButton
+      Left = 333
+      Height = 25
+      Top = 374
+      Width = 75
+      Caption = 'Button3'
+      TabOrder = 2
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    left = 368
+    top = 88
   end
 end

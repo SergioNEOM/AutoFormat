@@ -212,7 +212,7 @@ begin
   with DM1.SQLQuery1 do
   begin
     Close;
-    SQL.Text:='SELECT p.id,p.prjdate,p.prjinfo,length(t.tmp) as lentmp FROM projects p, templates t WHERE p.tmp_id=t.id and p.user_id=:u';
+    SQL.Text:='SELECT p.*,length(t.tmp) as lentmp FROM projects p, templates t WHERE t.prj_id=p.id and p.user_id=:u';
     ParamByName('u').Value:=CurrentUser.id;
     try
       Open;
@@ -222,7 +222,7 @@ begin
     end;
   end;
   //--
-  with TListForm1.Create(self,DM1.DataSource1,'Проекты',CurrentUser.project) do
+  with TListForm1.Create(self,DM1.DataSource1,'Проекты',CurrentProject.id) do
   try
      if ShowModal = mrOk then
      begin
