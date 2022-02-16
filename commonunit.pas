@@ -42,7 +42,7 @@ type
   {TBlock}
   TBlock = class(TObject)
     id     : integer;
-    order  : integer;
+    order  : integer;    // deprecated
     name   : string;
     info   : string;
     public
@@ -51,7 +51,6 @@ type
   end;
 
   {TPrjRec}
-
   TPrjRec = class(TObject)
     id         : integer;
     created    : TDate;
@@ -61,6 +60,18 @@ type
     public
       procedure Clear;
       procedure SetPrj(pid:integer=-1;cdate:TDate=0;mdate:TDate=0;pinfo:string='';ptmp:boolean=False);
+  end;
+
+  {TTemplate}
+  TTemplate = class(TObject)
+    id      : integer;
+    name    : String;
+    uid     : String;
+    //prjid   : integer;  // ??
+    //tmllen  : integer;  //??
+    public
+      procedure Clear;
+      procedure SetTmp(tid:integer=-1;tname:string='';tuid:string='');
   end;
 
 
@@ -95,7 +106,6 @@ end;
 //--------------------
 
 {TPrjRec}
-
 procedure TPrjRec.Clear;
 begin
   self.SetPrj();
@@ -110,6 +120,22 @@ begin
   self.tmp := ptmp;
 end;
 
+//--------------------
+
+{TTemplate}
+procedure TTemplate.Clear;
+begin
+  self.SetTmp();
+end;
+
+procedure TTemplate.SetTmp(tid:integer=-1;tname:string='';tuid:string='');
+begin
+  self.id   := tid;
+  self.name := tname;
+  self.uid  := tuid;
+end;
+
+//--------------------
 //--------------------
 {
 unit afmain;

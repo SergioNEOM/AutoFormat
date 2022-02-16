@@ -34,12 +34,14 @@ type
     function CheckUser(login,password:string) : integer; // res > 0 - OK;  -1 - wrong login/password; -999 - DB not connected
     //-- blocks
     procedure BlocksOpen;
+    function GetBlocksFromTmp(tmpid:integer): TList;
     procedure FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
     //-- projects
     function AddProject(Info: string='') : integer;
     function GetProject(prid : integer) : boolean;
     function GetProjectFields:boolean;
     //-- templates
+    function GetTemplatesOfProject(prjid:integer):TList;
     function InsertTemplate(prj_id: integer; TempName,FName: string):integer;
   end;
 
@@ -127,6 +129,45 @@ begin
     SQL.Text:='SELECT * FROM blocks ORDER BY blockorder';
   end;
 }
+end;
+
+function TDM1.GetBlocksFromTmp(tmpid:integer): TList;
+var
+  b : TBlock;
+begin
+  Result := nil;
+  if tmpid<=0 then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text:='SELECT * FROM blocks WHERE tmp_id=:tmpid;';
+    Params.Clear;
+    ParamByName('tmpid').AsInteger:=tmpid;
+    try
+      Open;
+      if RecordCount<1 then Exit;
+      First;
+      Result := TList.Create;
+      while not EOF do
+      begin
+        b := TBlock.Create;
+        b.SetBlockData(
+          FieldByName('id').AsInteger,
+          FieldByName('blockorder').AsInteger,
+          FieldByName('blockname').AsString,
+          FieldByName('blockinfo').AsString
+        );
+        Result.Add(b);
+        Next;
+      end;
+    except
+      raise Exception.Create('Ошибка формирования списка блоков');
+      if Assigned(Result) then Result.Free;
+    end;
+  finally
+    Close;
+    if Assigned(b) then b.Free;
+  end;
 end;
 
 procedure TDM1.FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
@@ -254,7 +295,44 @@ begin
   end;
 end;
 
-
+function TDM1.GetTemplatesOfProject(prjid:integer):TList;
+var
+  t : TTemplate;
+begin
+  Result := nil;
+  if prjid<=0 then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text:='SELECT t.id,t.tmpname,t.uid, length(t.tmp) as len FROM templates t WHERE prj_id=:prjid;';
+    Params.Clear;
+    ParamByName('prjid').AsInteger:=prjid;
+    try
+      Open;
+      if RecordCount<1 then Exit;
+      First;
+      Result := TList.Create;
+      while not EOF do
+      begin
+        t := TTemplate.Create;
+        t.SetTmp(
+          FieldByName('id').AsInteger,
+          FieldByName('tmpname').AsString,
+          FieldByName('uid').AsString
+          // ,FieldByName('len').AsInteger
+        );
+        Result.Add(t);
+        Next;
+      end;
+    except
+      raise Exception.Create('Ошибка формирования списка шаблонов');
+      if Assigned(Result) then Result.Free;
+    end;
+  finally
+    Close;
+    if Assigned(t) then t.Free;
+  end;
+end;
 
 {
 aMStr:TMemoryStream;

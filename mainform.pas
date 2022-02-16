@@ -13,11 +13,9 @@ type
   { TMainForm1 }
 
   TMainForm1 = class(TForm)
-    Button1: TButton;
     DelPrjAction: TAction;
     ClosePrjAction: TAction;
     FormatAction: TAction;
-    ListBox1: TListBox;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
@@ -38,7 +36,6 @@ type
     ChangeUserAction: TAction;
     ActionList1: TActionList;
     ActionImages: TImageList;
-    procedure Button1Click(Sender: TObject);
     procedure ChangeUserActionExecute(Sender: TObject);
     procedure ExitAppActionExecute(Sender: TObject);
     procedure FormatActionExecute(Sender: TObject);
@@ -105,15 +102,6 @@ begin
   ShowLogin;
 end;
 
-procedure TMainForm1.Button1Click(Sender: TObject);
-var
-  s : TStrings;
-begin
-  s := TStrings.Create;
-  DM1.FillBlockNames(s,1);
-  ListBox1.Items.AddStrings(s);
-  s.Free;
-end;
 
 procedure TMainForm1.ExitAppActionExecute(Sender: TObject);
 begin

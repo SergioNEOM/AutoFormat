@@ -1,40 +1,18 @@
 object MainForm1: TMainForm1
   Left = 362
-  Height = 469
+  Height = 299
   Top = 164
-  Width = 626
+  Width = 438
   Caption = 'Auto Format'
-  ClientHeight = 444
-  ClientWidth = 626
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow
   LCLVersion = '2.0.6.0'
-  object ListBox1: TListBox
-    Left = 16
-    Height = 368
-    Top = 56
-    Width = 184
-    ItemHeight = 0
-    ParentFont = False
-    ScrollWidth = 182
-    TabOrder = 0
-    TopIndex = -1
-  end
-  object Button1: TButton
-    Left = 238
-    Height = 25
-    Top = 114
-    Width = 75
-    Caption = 'Button1'
-    OnClick = Button1Click
-    TabOrder = 1
-  end
   object ActionList1: TActionList
     Images = ActionImages
     left = 40
-    top = 280
+    top = 104
     object ChangeUserAction: TAction
       Category = 'app'
       Caption = 'Сменить пользователя'
@@ -77,7 +55,7 @@ object MainForm1: TMainForm1
   end
   object ActionImages: TImageList
     left = 40
-    top = 352
+    top = 184
     Bitmap = {
       4C69030000001000000010000000A8CDE0FFB7D6E7FF95B8D3FF4571A2FF4063
       82FF5E83A2FF86AFCBFFB5D5E9FF9EC8E3FFA5C3DDFF81A5C7FF6A97C0FF5F96
@@ -180,7 +158,7 @@ object MainForm1: TMainForm1
   end
   object MainMenu1: TMainMenu
     Images = ActionImages
-    left = 26
+    left = 40
     top = 8
     object MenuItem1: TMenuItem
       Caption = 'Приложение'

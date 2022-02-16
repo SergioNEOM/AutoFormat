@@ -42,7 +42,7 @@ implementation
 
 {$R *.lfm}
 
-uses LCLType, MainForm, DM;
+uses LCLType, MainForm, DM, CommonUnit;
 
 { TProjectForm }
 
@@ -58,12 +58,11 @@ end;
 }
 
 procedure TProjectForm.FormCreate(Sender: TObject);
+var
+  t : TList;
+  i : Integer;
 begin
-  if MainForm1.CurrentProject.id >0 then
-  begin
-    PrjInfoLabel.Caption:=MainForm1.CurrentProject.prjinfo;
-  end
-  else
+  if MainForm1.CurrentProject.id <=0 then
   begin
     // no current project ?
     // make sure:  will be no mistakes
@@ -71,6 +70,31 @@ begin
     TopPanel.Enabled:=False;
     CentralPanel.Enabled:=False;
     OkButton.Enabled:=False;
+  end
+  else
+  begin
+    // Описание проекта
+    PrjInfoLabel.Caption:=MainForm1.CurrentProject.prjinfo;
+    // получить шаблоны
+    try
+      t := DM1.GetTemplatesOfProject(MainForm1.CurrentProject.id);
+      // ComboBox заполнить списком шаблонов в проекте:
+      ComboBox1.Clear;
+      for i:=0 to t.Capacity-1 do
+      begin
+        if (t.Items[i] is TTemplate) then
+          ComboBox1.Items.AddObject(TTemplate(t.Items[i]).name,TTemplate(t.Items[i]));
+      end;
+      // установить у ComboBox свойство OnChange  или OnSelect для смены списка блоков после смены шаблона
+      // пока планируется получать список блоков "на лету":
+      // по id шаблона получаем в DataSet список блоков и заполняем ListBox (как вложенные объекты)
+      // если не пойдёт, то запасной вариант:
+      // задейстровать 2 запроса(master-detail), либо запрос из двух таблиц сканировать пока не меняется номер шаблона
+      //...
+    finally
+      t.Free;
+    end;
+    ComboBox1.ItemIndex:=0;
   end;
 end;
 
