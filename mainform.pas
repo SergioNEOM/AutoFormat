@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, sqlite3conn, sqldb, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ActnList, Menus, JSONPropStorage, IniPropStorage, CommonUnit, DM;
+  StdCtrls, ActnList, Menus, CommonUnit, DM;
 
 type
 
@@ -209,7 +209,7 @@ begin
       Exit;
     end;
   end;
-  //--
+  //TODO: вынести в функцию ???  --
   with TListForm1.Create(self,DM1.DataSource1,'Проекты',CurrentProject.id) do
   try
      if ShowModal = mrOk then
@@ -226,12 +226,16 @@ begin
     Free;
   end;
   //---
-  if  MainForm1.CurrentProject.id <=0 then Exit;
-
+  if  CurrentProject.id <=0 then Exit;
 //  with TProjectForm.Create(self,MainForm1.CurrentProject.id) do
   with TProjectForm.Create(self) do
   try
-    if ShowModal=mrOk then showmessage('project saved');
+    if ShowModal=mrOk then
+    begin
+      //TODO: записать в БД
+      showmessage('project saved -?');
+    end;
+    // else ...  if modified ... are you sure?
   finally
     Free;
   end;

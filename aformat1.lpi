@@ -33,7 +33,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="aformat1.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -90,6 +90,13 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ProjectFrm"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="inputmemofrm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="InputMemoForm"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="InputMemoFrm"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

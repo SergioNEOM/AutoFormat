@@ -1,7 +1,7 @@
 object ProjectForm: TProjectForm
-  Left = 398
+  Left = 619
   Height = 624
-  Top = 201
+  Top = 190
   Width = 849
   Caption = 'Project'
   ClientHeight = 624
@@ -38,8 +38,9 @@ object ProjectForm: TProjectForm
       Top = 88
       Width = 240
       ItemHeight = 0
+      OnSelect = ComboBox1Select
+      Style = csDropDownList
       TabOrder = 0
-      Text = 'ComboBox1'
     end
     object SpeedButton1: TSpeedButton
       Left = 280
@@ -105,25 +106,29 @@ object ProjectForm: TProjectForm
       Height = 398
       Top = 12
       Width = 216
-      ItemHeight = 0
+      Items.Strings = (
+        '<-- нет блоков -->'
+      )
+      ItemHeight = 23
+      OnSelectionChange = ListBox1SelectionChange
       ScrollWidth = 214
       TabOrder = 0
-      TopIndex = -1
     end
     object StaticText1: TStaticText
       Left = 264
       Height = 348
       Top = 12
       Width = 556
-      Caption = 'StaticText1'
+      Caption = '<-- нет информации -->'
       TabOrder = 1
     end
     object Button3: TButton
-      Left = 333
+      Left = 424
       Height = 25
-      Top = 374
-      Width = 75
-      Caption = 'Button3'
+      Top = 368
+      Width = 88
+      Caption = 'Изменить'
+      OnClick = Button3Click
       TabOrder = 2
     end
   end

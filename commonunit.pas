@@ -31,11 +31,17 @@ const
 type
   {TUserRec}
   TUserRec = class(TObject)
-    id     : integer;
-    name   : string;
-    super  : boolean;
-    project: integer;
+    private
+      ur_id     : integer;
+      ur_name   : string;
+      ur_super  : boolean;
+      ur_project: integer;
     public
+      property Id : integer read ur_id write ur_id;
+      property Name : String read ur_name write ur_name;
+      property Super  : boolean read ur_super write ur_super;
+      property Project: integer read ur_project write ur_project;
+      //
       procedure Clear;
   end;
 

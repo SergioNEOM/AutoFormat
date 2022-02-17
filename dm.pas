@@ -5,7 +5,7 @@ unit DM;
 interface
 
 uses
-  Classes, SysUtils, sqlite3conn, sqldb, db;
+  Classes, SysUtils, sqlite3conn, sqldb, db, contnrs {for TObjectList};
 
 const
   SQL_BLOCKS = 'SELECT * FROM blocks WHERE tmp_id=:tmpid;';
@@ -34,14 +34,14 @@ type
     function CheckUser(login,password:string) : integer; // res > 0 - OK;  -1 - wrong login/password; -999 - DB not connected
     //-- blocks
     procedure BlocksOpen;
-    function GetBlocksFromTmp(tmpid:integer): TList;
+    function GetBlocksFromTmp(tmpid:integer): TObjectList;
     procedure FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
     //-- projects
     function AddProject(Info: string='') : integer;
     function GetProject(prid : integer) : boolean;
     function GetProjectFields:boolean;
     //-- templates
-    function GetTemplatesOfProject(prjid:integer):TList;
+    function GetTemplatesOfProject(prjid:integer):TObjectList;
     function InsertTemplate(prj_id: integer; TempName,FName: string):integer;
   end;
 
@@ -52,7 +52,7 @@ implementation
 
 {$R *.lfm}
 
-uses MainForm, CommonUnit, StrUtils, md5;
+uses MainForm, CommonUnit, StrUtils, md5 ;
 
 
 function TDM1.DBConnect : boolean;
@@ -131,7 +131,7 @@ begin
 }
 end;
 
-function TDM1.GetBlocksFromTmp(tmpid:integer): TList;
+function TDM1.GetBlocksFromTmp(tmpid:integer): TObjectList;
 var
   b : TBlock;
 begin
@@ -140,14 +140,14 @@ begin
   with SQLQuery1 do
   try
     Close;
-    SQL.Text:='SELECT * FROM blocks WHERE tmp_id=:tmpid;';
     Params.Clear;
+    SQL.Text:='SELECT * FROM blocks WHERE tmp_id=:tmpid;';
     ParamByName('tmpid').AsInteger:=tmpid;
     try
       Open;
       if RecordCount<1 then Exit;
       First;
-      Result := TList.Create;
+      Result := TObjectList.Create;
       while not EOF do
       begin
         b := TBlock.Create;
@@ -166,7 +166,6 @@ begin
     end;
   finally
     Close;
-    if Assigned(b) then b.Free;
   end;
 end;
 
@@ -295,7 +294,7 @@ begin
   end;
 end;
 
-function TDM1.GetTemplatesOfProject(prjid:integer):TList;
+function TDM1.GetTemplatesOfProject(prjid:integer):TObjectList;
 var
   t : TTemplate;
 begin
@@ -304,14 +303,14 @@ begin
   with SQLQuery1 do
   try
     Close;
-    SQL.Text:='SELECT t.id,t.tmpname,t.uid, length(t.tmp) as len FROM templates t WHERE prj_id=:prjid;';
     Params.Clear;
+    SQL.Text:='SELECT t.id,t.tmpname,t.uid, length(t.tmp) as len FROM templates t WHERE prj_id=:prjid;';
     ParamByName('prjid').AsInteger:=prjid;
     try
       Open;
       if RecordCount<1 then Exit;
       First;
-      Result := TList.Create;
+      Result := TObjectList.Create;
       while not EOF do
       begin
         t := TTemplate.Create;
@@ -330,7 +329,6 @@ begin
     end;
   finally
     Close;
-    if Assigned(t) then t.Free;
   end;
 end;
 

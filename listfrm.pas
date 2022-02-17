@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Buttons, db,
-  DBGrids;
+  DBGrids, StdCtrls;
 
 resourcestring
   FormHeader = 'Справочник: ';
@@ -38,14 +38,20 @@ constructor TListForm1.Create(TheOwner: TComponent; DS: TDataSource; ListName:st
 begin
   inherited Create(TheOwner);
   self.Caption:=FormHeader + Trim(ListName);
-  DBGrid1.DataSource := DS;
-  if not Assigned(DS) or (id > 0) then
+  if not Assigned(DS) or (DS.DataSet.RecordCount<1)  then
   begin
     // no records in DS
     OkButton.Enabled:=False;
     Current_id:=-1;
+    Exit;
   end;
+  DBGrid1.DataSource := DS;
   if DS.DataSet.Locate('id',id,[]) then Current_id := id
+  else
+  begin
+    DS.DataSet.First;
+    Current_id:=DS.DataSet.FieldByName('id').AsInteger;
+  end;
 end;
 
 end.
