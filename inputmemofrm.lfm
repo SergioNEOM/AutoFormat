@@ -1,0 +1,50 @@
+object InputMemoForm: TInputMemoForm
+  Left = 362
+  Height = 467
+  Top = 164
+  Width = 549
+  Caption = 'InputMemoForm'
+  ClientHeight = 467
+  ClientWidth = 549
+  LCLVersion = '2.0.6.0'
+  object Memo1: TMemo
+    Left = 0
+    Height = 407
+    Top = 0
+    Width = 549
+    Align = alClient
+    TabOrder = 0
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 60
+    Top = 407
+    Width = 549
+    Align = alBottom
+    ClientHeight = 60
+    ClientWidth = 549
+    TabOrder = 1
+    object BitBtn1: TBitBtn
+      Left = 419
+      Height = 40
+      Top = 8
+      Width = 110
+      Default = True
+      DefaultCaption = True
+      Kind = bkOK
+      ModalResult = 1
+      TabOrder = 0
+    end
+    object BitBtn2: TBitBtn
+      Left = 256
+      Height = 40
+      Top = 8
+      Width = 110
+      Cancel = True
+      DefaultCaption = True
+      Kind = bkCancel
+      ModalResult = 2
+      TabOrder = 1
+    end
+  end
+end
