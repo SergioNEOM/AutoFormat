@@ -27,15 +27,21 @@ type
     StaticText1: TStaticText;
     TopPanel: TPanel;
     procedure Button3Click(Sender: TObject);
+    procedure CancelButtonClick(Sender: TObject);
     procedure ComboBox1Select(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ListBox1SelectionChange(Sender: TObject; User: boolean);
+    procedure OkButtonClick(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
+    procedure SpeedButton2Click(Sender: TObject);
   private
 
   public
     blklist,
     tmplist   :   TObjectList;
+    BlocksWasChanged,
+    TempsWasChanged           : Boolean;
+    LastTempIdx : integer;
     //constructor Create(TheOwner: TComponent; Proj_id : integer = -1);
     function AddProject : integer;
     function FillTemplates : boolean;
@@ -66,6 +72,9 @@ end;
 
 procedure TProjectForm.FormCreate(Sender: TObject);
 begin
+  BlocksWasChanged := False;
+  TempsWasChanged  := False;
+  LastTempIdx:=-1;
   if MainForm1.CurrentProject.id <=0 then
   begin
     // no current project ?
@@ -97,36 +106,87 @@ begin
   StaticText1.Caption:=TBlock(blklist[ListBox1.ItemIndex]).name;
 end;
 
-procedure TProjectForm.ComboBox1Select(Sender: TObject);
+procedure TProjectForm.OkButtonClick(Sender: TObject);
 begin
+  //if MessageDlg('Подтверждение записи в БД','Информация о проекте будет записана в БД'#13#10'Уверены?',mtConfirmation, mbYesNo,0)=mrYes then
+  //begin;
+    // Save Blocks if changed
+    if DM1.SaveBlocks2DB(blklist, TTemplate(ComboBox1.Items.Objects[LastTempIdx]).id) then BlocksWasChanged:=False
+    else
+      begin
+        MessageDlg('Ошибка записи в БД','Произошла ошибка при записи информации в БД',mtError, [mbOK],'');
+        Exit;
+      end;
+    //TODO: Save Templates if changed
+
+  // if all right, ModalResult := mrOk
+  ModalResult:=mrOK;
+end;
+
+procedure TProjectForm.ComboBox1Select(Sender: TObject);
+var
+  c : TModalResult;
+begin
+  if LastTempIdx = ComboBox1.ItemIndex then Exit; // ничего нового не выбрано
+  // new template selected, but old data not saved!!
+  while BlocksWasChanged do
+  begin
+    c := MessageDlg('Подтверждение','Информация предыдущего шаблона была изменена!'+
+           #13#10'Сохранить изменения(Да), забыть их(Нет) или не менять шаблон(Отмена)?',
+           mtConfirmation,mbYesNoCancel,'');
+    case c of
+      mrYes: if DM1.SaveBlocks2DB(blklist, TTemplate(ComboBox1.Items.Objects[LastTempIdx]).id) then BlocksWasChanged:=False;
+      mrNo:  BlocksWasChanged:=False;
+      mrCancel: Exit;
+    end;
+  end;
+  // for new template:
   FillBlocks;
 end;
 
 procedure TProjectForm.Button3Click(Sender: TObject);
 begin
+  // изменить информацию в блоке
   with TInputMemoForm.Create(self) do
   try
     Memo1.Lines.Text:=TBlock(blklist[ListBox1.ItemIndex]).name;
     if ShowModal=mrOK then
     begin
-      StaticText1.Caption := Memo1.Text
-      TBock(blklist[ListBox1.ItemIndex]).name := Memo1.Text;
+      StaticText1.Caption := Memo1.Text;
+      TBlock(blklist[ListBox1.ItemIndex]).name := Memo1.Text;
+      //
+      BlocksWasChanged := True;
     end;
   finally
     Free
   end;
 end;
 
+procedure TProjectForm.CancelButtonClick(Sender: TObject);
+begin
+  if BlocksWasChanged or TempsWasChanged then
+    if MessageDlg('Подтверждение отмены','Изменения проекта не записаны в БД!'#13#10'Вы точно хотите отказаться от сохранения?',mtConfirmation,mbYesNo,'')<> mrYes then Exit;
+end;
+
 procedure TProjectForm.SpeedButton1Click(Sender: TObject);
 var
   t : integer;
 begin
+  //  добавление шаблона в проект
   if not OpenDialog1.Execute then Exit;
   t := DM1.InsertTemplate(
         MainForm1.CurrentProject.id,
         InputBox('Ввод данных','Введите описание шаблона',''),
         OpenDialog1.FileName);
-  showmessage('speedbutton1Click->'+inttostr(t));
+  //
+  TempsWasChanged:=True;
+end;
+
+procedure TProjectForm.SpeedButton2Click(Sender: TObject);
+begin
+  // delete template from project ... ????
+  //
+  // if MessageDlg()=mrYes then begin delete...   TempsWasChanged:=True; end;
 end;
 
 function TProjectForm.AddProject: integer;
@@ -196,7 +256,6 @@ begin
     Result := True;
   end;
 end;
-
 
 
 end.

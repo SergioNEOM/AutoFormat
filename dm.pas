@@ -5,7 +5,8 @@ unit DM;
 interface
 
 uses
-  Classes, SysUtils, sqlite3conn, sqldb, db, contnrs {for TObjectList};
+  Classes, SysUtils, sqlite3conn, sqldb, db, contnrs {for TObjectList},
+  CommonUnit;
 
 const
   SQL_BLOCKS = 'SELECT * FROM blocks WHERE tmp_id=:tmpid;';
@@ -36,6 +37,10 @@ type
     procedure BlocksOpen;
     function GetBlocksFromTmp(tmpid:integer): TObjectList;
     procedure FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
+    function AddBlock2DB(blk : TBlock; temp_id : integer = -1):integer; // temp_id default =-1 --> to exclude bugs
+    function insertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
+    function UpdBlockInDB(blk : TBlock; temp_id : integer = -1):boolean;
+    function SaveBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
     //-- projects
     function AddProject(Info: string='') : integer;
     function GetProject(prid : integer) : boolean;
@@ -52,7 +57,7 @@ implementation
 
 {$R *.lfm}
 
-uses MainForm, CommonUnit, StrUtils, md5 ;
+uses MainForm,  StrUtils, md5 ;
 
 
 function TDM1.DBConnect : boolean;
@@ -119,6 +124,10 @@ begin
     end;
   end;
 end;
+
+
+
+{ Blocks }
 
 procedure TDM1.BlocksOpen;
 begin
@@ -212,6 +221,104 @@ begin
     end;
   end;
 end;
+
+function TDM1.AddBlock2DB(blk : TBlock; temp_id : integer = -1):integer;
+begin
+  Result := -1;
+  {}
+end;
+
+function TDM1.InsertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean; // temp_id default =-1 --> to exclude bugs
+var
+  i: integer;
+begin
+  Result := False;
+  if (temp_id<=0) or not Assigned(blks) then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text := 'INSERT INTO blocks (blockorder,blockname,blockinfo,tmp_id) '+
+             ' VALUES (:bord,:bname,:binfo,:temp_id);';
+    Prepare;
+    for i:=0 to blks.Count-1 do
+    try
+      ParamByName('bord').AsInteger := TBlock(blks[i]).order;
+      ParamByName('bname').AsString := TBlock(blks[i]).name;
+      ParamByName('binfo').AsString := TBlock(blks[i]).info;
+      ParamByName('temp_id').AsInteger := temp_id;
+      ExecSQL;
+      if Transaction.Active then TSQLTransaction(Transaction).CommitRetaining;
+    except
+      // showmessage('error... '); -?
+      if Transaction.Active then TSQLTransaction(Transaction).Rollback;
+      Exit;
+    end;
+    Result := True;
+  finally
+    Close;
+  end;
+end;
+
+function TDM1.UpdBlockInDB(blk : TBlock; temp_id : integer = -1):boolean;
+begin
+  Result := False;
+  if (temp_id<=0) or not Assigned(blk) then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text := 'UPDATE blocks SET blockorder=:bord, blockname=:bname, blockinfo=:binfo WHERE id=:bid and tmp_id=:temp_id;';
+    ParamByName('bid').AsInteger := TBlock(blk).id;
+    ParamByName('bord').AsInteger := TBlock(blk).order;
+    ParamByName('bname').AsString := TBlock(blk).name;
+    ParamByName('binfo').AsString := TBlock(blk).info;
+    ParamByName('temp_id').AsInteger := temp_id;
+    try
+      ExecSQL;
+      if Transaction.Active then TSQLTransaction(Transaction).CommitRetaining;
+    except
+      // showmessage('error... '); -?
+      if Transaction.Active then TSQLTransaction(Transaction).Rollback;
+      Exit;
+    end;
+    Result := True;
+  finally
+    Close;
+  end;
+end;
+
+function TDM1.SaveBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
+var
+  i: integer;
+begin
+  Result := False;
+  if (temp_id<=0) or not Assigned(blks) then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text := 'UPDATE blocks SET blockorder=:bord, blockname=:bname, blockinfo=:binfo WHERE id=:bid and tmp_id=:temp_id;';
+    Prepare;
+    for i:=0 to blks.Count-1 do
+    try
+      ParamByName('bid').AsInteger := TBlock(blks[i]).id;
+      ParamByName('bord').AsInteger := TBlock(blks[i]).order;
+      ParamByName('bname').AsString := TBlock(blks[i]).name;
+      ParamByName('binfo').AsString := TBlock(blks[i]).info;
+      ParamByName('temp_id').AsInteger := temp_id;
+      ExecSQL;
+      if Transaction.Active then TSQLTransaction(Transaction).CommitRetaining;
+    except
+      if Transaction.Active then TSQLTransaction(Transaction).Rollback;
+      // showmessage('error... '); -?
+      Exit;
+    end;
+    Result := True;
+  finally
+    Close;
+  end;
+end;
+
+
+{Projects}
 
 function TDM1.AddProject(Info: string='') : integer;
 begin

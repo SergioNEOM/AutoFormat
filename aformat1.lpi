@@ -94,6 +94,7 @@
         <Filename Value="inputmemofrm.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="InputMemoForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="InputMemoFrm"/>
       </Unit8>
