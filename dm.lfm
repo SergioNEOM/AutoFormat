@@ -1,54 +1,67 @@
 object DM1: TDM1
   OldCreateOrder = False
-  Height = 427
-  HorizontalOffset = 446
-  VerticalOffset = 314
-  Width = 691
-  PPI = 96
+  Height = 534
+  HorizontalOffset = 558
+  VerticalOffset = 393
+  Width = 864
+  PPI = 120
   object SQLite3Connection1: TSQLite3Connection
     Connected = False
     LoginPrompt = False
     KeepConnection = False
     Transaction = SQLTransaction1
     CharSet = 'UTF-8'
-    left = 72
-    top = 24
+    AlwaysUseBigint = False
+    Left = 90
+    Top = 30
   end
   object SQLQuery1: TSQLQuery
     FieldDefs = <>
     Database = SQLite3Connection1
     Transaction = SQLTransaction1
     Params = <>
-    left = 72
-    top = 224
+    Macros = <>
+    Left = 90
+    Top = 280
   end
   object SQLTransaction1: TSQLTransaction
     Active = False
     Database = SQLite3Connection1
-    left = 72
-    top = 176
+    Left = 90
+    Top = 220
   end
   object DataSource1: TDataSource
     DataSet = SQLQuery1
-    left = 72
-    top = 280
+    Left = 90
+    Top = 350
   end
-  object Blocks: TSQLQuery
+  object Templates: TSQLQuery
     FieldDefs = <>
     Database = SQLite3Connection1
     Transaction = SQLTransaction1
-    Params = <>
-    left = 264
-    top = 232
+    SQL.Strings = (
+      'SELECT * FROM templates WHERE prj_id=:id'
+    )
+    Params = <    
+      item
+        DataType = ftUnknown
+        Name = 'id'
+        ParamType = ptInput
+      end>
+    Macros = <>
+    DataSource = Projects_DS
+    Left = 512
+    Top = 104
   end
-  object Blocks_DS: TDataSource
-    DataSet = Blocks
-    left = 264
-    top = 280
+  object Temp_DS: TDataSource
+    DataSet = Templates
+    Left = 512
+    Top = 176
   end
   object SQLScript1: TSQLScript
     DataBase = SQLite3Connection1
     Transaction = TranScript
+    AutoCommit = False
     UseDollarString = False
     Directives.Strings = (
       'SET TERM'
@@ -68,24 +81,77 @@ object DM1: TDM1
     UseSetTerm = True
     UseCommit = True
     UseDefines = True
-    left = 352
-    top = 24
+    Left = 232
+    Top = 120
   end
   object TranScript: TSQLTransaction
     Active = False
     Database = SQLite3Connection1
-    left = 352
-    top = 80
+    Left = 232
+    Top = 190
   end
   object SQLTransactionMain: TSQLTransaction
     Active = False
     Database = SQLite3Connection1
-    left = 176
-    top = 24
+    Left = 232
+    Top = 32
   end
-  object SQLTransaction3: TSQLTransaction
+  object TempTran: TSQLTransaction
     Active = False
-    left = 264
-    top = 184
+    Database = SQLite3Connection1
+    Left = 512
+    Top = 30
+  end
+  object ProjectTran: TSQLTransaction
+    Active = False
+    Database = SQLite3Connection1
+    Left = 408
+    Top = 32
+  end
+  object Projects: TSQLQuery
+    FieldDefs = <>
+    Database = SQLite3Connection1
+    Transaction = SQLTransaction1
+    SQL.Strings = (
+      'SELECT * FROM projects;'
+    )
+    Params = <>
+    Macros = <>
+    Left = 408
+    Top = 104
+  end
+  object Projects_DS: TDataSource
+    DataSet = Projects
+    Left = 408
+    Top = 176
+  end
+  object BlockTran: TSQLTransaction
+    Active = False
+    Database = SQLite3Connection1
+    Left = 608
+    Top = 32
+  end
+  object Blocks_DS: TDataSource
+    DataSet = Blocks
+    Left = 608
+    Top = 176
+  end
+  object Blocks: TSQLQuery
+    FieldDefs = <>
+    Database = SQLite3Connection1
+    Transaction = SQLTransaction1
+    SQL.Strings = (
+      'SELECT * FROM blocks WHERE tmp_id=:id;'
+    )
+    Params = <    
+      item
+        DataType = ftUnknown
+        Name = 'id'
+        ParamType = ptInput
+      end>
+    Macros = <>
+    DataSource = Temp_DS
+    Left = 608
+    Top = 104
   end
 end

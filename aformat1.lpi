@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="11"/>
+    <Version Value="12"/>
     <General>
+      <Flags>
+        <CompatibilityMode Value="True"/>
+      </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
       <Title Value="aformat1"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
@@ -23,7 +25,6 @@
     </PublishOptions>
     <RunParams>
       <FormatVersion Value="2"/>
-      <Modes Count="0"/>
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>
@@ -33,7 +34,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="10">
       <Unit0>
         <Filename Value="aformat1.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -98,6 +99,13 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="InputMemoFrm"/>
       </Unit8>
+      <Unit9>
+        <Filename Value="processing.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="TaskForm"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Processing"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

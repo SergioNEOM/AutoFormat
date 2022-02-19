@@ -62,10 +62,9 @@ type
     created    : TDate;
     modified   : TDate;
     prjinfo: string;
-    tmp    : boolean;      // integer if file size ?
     public
       procedure Clear;
-      procedure SetPrj(pid:integer=-1;cdate:TDate=0;mdate:TDate=0;pinfo:string='';ptmp:boolean=False);
+      procedure SetPrj(pid:integer=-1;cdate:TDate=0;mdate:TDate=0;pinfo:string='');
   end;
 
   {TTemplate}
@@ -117,13 +116,12 @@ begin
   self.SetPrj();
 end;
 
-procedure TPrjRec.SetPrj(pid:integer=-1;cdate:TDate=0;mdate:TDate=0;pinfo:string='';ptmp:boolean=False);
+procedure TPrjRec.SetPrj(pid:integer=-1;cdate:TDate=0;mdate:TDate=0;pinfo:string='');
 begin
   self.id := pid;
   self.created  := cdate;
   self.modified := mdate;
   self.prjinfo := pinfo;
-  self.tmp := ptmp;
 end;
 
 //--------------------

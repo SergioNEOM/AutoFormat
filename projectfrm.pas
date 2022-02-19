@@ -55,7 +55,7 @@ implementation
 
 {$R *.lfm}
 
-uses LCLType, MainForm, DM, CommonUnit, InputMemoFrm;
+uses LCLType, md5,  MainForm, DM, CommonUnit, InputMemoFrm, Processing;
 
 { TProjectForm }
 
@@ -117,7 +117,7 @@ begin
         MessageDlg('Ошибка записи в БД','Произошла ошибка при записи информации в БД',mtError, [mbOK],'');
         Exit;
       end;
-    //TODO: Save Templates if changed
+    //TODO: Update Templates if changed
 
   // if all right, ModalResult := mrOk
   ModalResult:=mrOK;
@@ -166,18 +166,44 @@ procedure TProjectForm.CancelButtonClick(Sender: TObject);
 begin
   if BlocksWasChanged or TempsWasChanged then
     if MessageDlg('Подтверждение отмены','Изменения проекта не записаны в БД!'#13#10'Вы точно хотите отказаться от сохранения?',mtConfirmation,mbYesNo,'')<> mrYes then Exit;
+  ModalResult:=mrCancel;
 end;
 
 procedure TProjectForm.SpeedButton1Click(Sender: TObject);
 var
-  t : integer;
+  t,i,r : integer;
+  o : TStringList;
+  b : TBlock;
+  tmp: TTemplate;
 begin
-  //  добавление шаблона в проект
+  //  кнопка добавления шаблона в проект
+  //
   if not OpenDialog1.Execute then Exit;
-  t := DM1.InsertTemplate(
-        MainForm1.CurrentProject.id,
-        InputBox('Ввод данных','Введите описание шаблона',''),
-        OpenDialog1.FileName);
+  tmp := TTemplate.Create;
+  tmp.Clear;
+  //TODO: надо ли заполнять uid:
+  tmp.uid:= MD5Print(MD5File(OpenDialog1.FileName));
+  tmp.name := InputBox('Ввод данных','Введите название шаблона (мах 32 знака)','');
+  t := DM1.InsertTemplate(MainForm1.CurrentProject.id, tmp.name, OpenDialog1.FileName);
+  // scan blocks...
+  o := TaskForm.WordScanFile(OpenDialog1.FileName);
+  if not Assigned(o) or (o.Count<1) then
+  begin
+    MessageDlg('Ошибка','Не удалось получить информацию из шаблона',mtError,[mbOK],'');
+    Exit;
+  end;
+  //
+  for i:=0 to o.Count-1 do
+  begin
+    b := TBlock.Create;
+    b.SetBlockData(-1,0,o[i]);
+    // пишем в БД
+    r := DM1.AddBlock2DB(b, TTemplate(tmplist[ComboBox1.ItemIndex]).id );
+    if r>0 then b.id := r;
+    //TODO: else - ??? В файле блок есть, а в БД не записалось!!!
+  end;
+  // добавить шаблон в ComboBox и сделать текущим (перечитать блоки из БД)
+  ComboBox1.AddItem(tmp.name,tmp);
   //
   TempsWasChanged:=True;
 end;

@@ -16,15 +16,21 @@ type
   { TDM1 }
 
   TDM1 = class(TDataModule)
-    DataSource1: TDataSource;
+    Blocks: TSQLQuery;
     Blocks_DS: TDataSource;
+    BlockTran: TSQLTransaction;
+    Projects_DS: TDataSource;
+    DataSource1: TDataSource;
+    Temp_DS: TDataSource;
     SQLite3Connection1: TSQLite3Connection;
     SQLQuery1: TSQLQuery;
-    Blocks: TSQLQuery;
+    Templates: TSQLQuery;
+    Projects: TSQLQuery;
     SQLScript1: TSQLScript;
     SQLTransaction1: TSQLTransaction;
+    ProjectTran: TSQLTransaction;
     TranScript: TSQLTransaction;
-    SQLTransaction3: TSQLTransaction;
+    TempTran: TSQLTransaction;
     SQLTransactionMain: TSQLTransaction;
   private
 
@@ -33,7 +39,7 @@ type
     function GetLastRowId : integer;
     //-- users
     function CheckUser(login,password:string) : integer; // res > 0 - OK;  -1 - wrong login/password; -999 - DB not connected
-    //-- blocks
+    //-- Templates
     procedure BlocksOpen;
     function GetBlocksFromTmp(tmpid:integer): TObjectList;
     procedure FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
@@ -127,12 +133,12 @@ end;
 
 
 
-{ Blocks }
+{ Templates }
 
 procedure TDM1.BlocksOpen;
 begin
 {  if MainForm1.CurrentUser.id <= 0 then Exit;
-  with Blocks do
+  with Templates do
   begin
     Close;
     SQL.Text:='SELECT * FROM blocks ORDER BY blockorder';
@@ -192,7 +198,7 @@ begin
   except
     Exit;
   end;
-  with Blocks do
+  with Templates do
   begin
     Close;
     Params.Clear;
@@ -225,7 +231,28 @@ end;
 function TDM1.AddBlock2DB(blk : TBlock; temp_id : integer = -1):integer;
 begin
   Result := -1;
-  {}
+  if (temp_id<=0) or not Assigned(blk) then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text := 'INSERT INTO blocks (blockorder,blockname,blockinfo,tmp_id) '+
+             ' VALUES (:bord,:bname,:binfo,:temp_id);';
+    try
+      ParamByName('bord').AsInteger := blk.order;
+      ParamByName('bname').AsString := blk.name;
+      ParamByName('binfo').AsString := blk.info;
+      ParamByName('temp_id').AsInteger := temp_id;
+      ExecSQL;
+      if Transaction.Active then TSQLTransaction(Transaction).CommitRetaining;
+      Result := GetLastRowId;
+    except
+      // showmessage('error... '); -?
+      if Transaction.Active then TSQLTransaction(Transaction).Rollback;
+      Exit;
+    end;
+  finally
+    Close;
+  end;
 end;
 
 function TDM1.InsertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean; // temp_id default =-1 --> to exclude bugs
@@ -353,7 +380,7 @@ begin
   try
     Close;
     //TODO: SQLite SQL script !!
-    SQL.Text:='SELECT p.id,p.prjdate,p.prjinfo,length(t.tmp) as lentmp FROM projects p, templates t WHERE p.tmp_id=t.id and p.id=:prid;';
+    SQL.Text:='SELECT p.id,p.prjdate,p.prjinfo FROM projects p WHERE p.id=:prid;';
     ParamByName('prid').AsInteger:=prid;
     try
       Open;
@@ -375,8 +402,7 @@ begin
       SQLQuery1.FieldByName('id').AsInteger,
       SQLQuery1.FieldByName('prjcreated').AsDateTime,
       SQLQuery1.FieldByName('prjmodified').AsDateTime,
-      SQLQuery1.FieldByName('prjinfo').AsString,
-      SQLQuery1.FieldByName('lentmp').AsInteger>0  //TODO: >length('{<Block>}') - ?
+      SQLQuery1.FieldByName('prjinfo').AsString
     );
     Result := True;
   except
