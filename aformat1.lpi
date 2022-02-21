@@ -103,6 +103,7 @@
         <Filename Value="processing.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="TaskForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Processing"/>
       </Unit9>

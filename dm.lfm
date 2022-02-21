@@ -38,7 +38,7 @@ object DM1: TDM1
   object Templates: TSQLQuery
     FieldDefs = <>
     Database = SQLite3Connection1
-    Transaction = SQLTransaction1
+    Transaction = SQLTransactionMain
     SQL.Strings = (
       'SELECT * FROM templates WHERE prj_id=:id'
     )
@@ -50,12 +50,12 @@ object DM1: TDM1
       end>
     Macros = <>
     DataSource = Projects_DS
-    Left = 512
+    Left = 600
     Top = 104
   end
   object Temp_DS: TDataSource
     DataSet = Templates
-    Left = 512
+    Left = 600
     Top = 176
   end
   object SQLScript1: TSQLScript
@@ -96,50 +96,38 @@ object DM1: TDM1
     Left = 232
     Top = 32
   end
-  object TempTran: TSQLTransaction
-    Active = False
-    Database = SQLite3Connection1
-    Left = 512
-    Top = 30
-  end
-  object ProjectTran: TSQLTransaction
-    Active = False
-    Database = SQLite3Connection1
-    Left = 408
-    Top = 32
-  end
   object Projects: TSQLQuery
     FieldDefs = <>
     Database = SQLite3Connection1
-    Transaction = SQLTransaction1
+    Transaction = SQLTransactionMain
     SQL.Strings = (
-      'SELECT * FROM projects;'
+      'SELECT * FROM projects WHERE user_id=:id;'
     )
-    Params = <>
+    Params = <    
+      item
+        DataType = ftUnknown
+        Name = 'id'
+        ParamType = ptInput
+      end>
     Macros = <>
-    Left = 408
+    DataSource = Users_DS
+    Left = 496
     Top = 104
   end
   object Projects_DS: TDataSource
     DataSet = Projects
-    Left = 408
+    Left = 496
     Top = 176
-  end
-  object BlockTran: TSQLTransaction
-    Active = False
-    Database = SQLite3Connection1
-    Left = 608
-    Top = 32
   end
   object Blocks_DS: TDataSource
     DataSet = Blocks
-    Left = 608
+    Left = 696
     Top = 176
   end
   object Blocks: TSQLQuery
     FieldDefs = <>
     Database = SQLite3Connection1
-    Transaction = SQLTransaction1
+    Transaction = SQLTransactionMain
     SQL.Strings = (
       'SELECT * FROM blocks WHERE tmp_id=:id;'
     )
@@ -151,7 +139,24 @@ object DM1: TDM1
       end>
     Macros = <>
     DataSource = Temp_DS
-    Left = 608
+    Left = 696
     Top = 104
+  end
+  object Users: TSQLQuery
+    FieldDefs = <>
+    Database = SQLite3Connection1
+    Transaction = SQLTransactionMain
+    SQL.Strings = (
+      ''
+    )
+    Params = <>
+    Macros = <>
+    Left = 392
+    Top = 104
+  end
+  object Users_DS: TDataSource
+    DataSet = Users
+    Left = 392
+    Top = 176
   end
 end

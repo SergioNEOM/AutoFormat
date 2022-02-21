@@ -11,7 +11,10 @@ resourcestring
   AppHeader = 'Auto Format';
 
 const
-
+     USER_ROLE_DEFAULT = 1;
+     USER_ROLE_ADMIN = 999;
+     USER_ROLE_CREATOR = 99;
+     //
      wdSeekMainDocument       =0;
      wdSeekPrimaryHeader      =1;
      wdSeekFirstPageHeader    =2;

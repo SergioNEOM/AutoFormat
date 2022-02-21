@@ -1,41 +1,40 @@
 object LoginForm: TLoginForm
   Left = 362
-  Height = 206
+  Height = 258
   Top = 164
-  Width = 314
+  Width = 392
   Caption = 'LoginForm'
-  ClientHeight = 206
-  ClientWidth = 314
-  LCLVersion = '2.0.6.0'
+  ClientHeight = 258
+  ClientWidth = 392
+  DesignTimePPI = 120
+  LCLVersion = '2.2.0.4'
   object PassField: TLabeledEdit
-    Left = 32
-    Height = 33
-    Top = 112
-    Width = 256
+    Left = 40
+    Height = 28
+    Top = 140
+    Width = 320
     EchoMode = emPassword
-    EditLabel.Height = 15
-    EditLabel.Width = 256
+    EditLabel.Height = 20
+    EditLabel.Width = 320
     EditLabel.Caption = 'User password'
-    EditLabel.ParentColor = False
     PasswordChar = '*'
     TabOrder = 1
   end
   object LoginField: TLabeledEdit
-    Left = 32
-    Height = 33
-    Top = 40
-    Width = 256
-    EditLabel.Height = 15
-    EditLabel.Width = 256
+    Left = 40
+    Height = 28
+    Top = 50
+    Width = 320
+    EditLabel.Height = 20
+    EditLabel.Width = 320
     EditLabel.Caption = 'User login'
-    EditLabel.ParentColor = False
     TabOrder = 0
   end
   object BitBtn1: TBitBtn
-    Left = 8
-    Height = 30
-    Top = 168
-    Width = 120
+    Left = 10
+    Height = 38
+    Top = 210
+    Width = 150
     Anchors = [akLeft, akBottom]
     Cancel = True
     DefaultCaption = True
@@ -44,15 +43,14 @@ object LoginForm: TLoginForm
     TabOrder = 2
   end
   object BitBtn2: TBitBtn
-    Left = 184
-    Height = 30
-    Top = 168
-    Width = 120
+    Left = 230
+    Height = 38
+    Top = 210
+    Width = 150
     Anchors = [akRight, akBottom]
     Default = True
     DefaultCaption = True
     Kind = bkOK
-    ModalResult = 1
     OnClick = BitBtn2Click
     TabOrder = 3
   end

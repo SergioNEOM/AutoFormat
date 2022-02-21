@@ -43,10 +43,11 @@ begin
     Exit;
   end;
   mdStr := MD5Print(MD5String('SVS'+Trim(PassField.Text)+'SVS'));
-  if DM1.CheckUser(Trim(LoginField.Text), mdStr)<=0 then
+  if DM1.CheckUser(Trim(LoginField.Text), mdStr)>0  then ModalResult:=mrOk
+  else
   begin
     Application.MessageBox('login error','',MB_ICONERROR+MB_OK);
-    Exit
+    Exit;
   end;
 end;
 

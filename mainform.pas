@@ -6,17 +6,16 @@ interface
 
 uses
   Classes, SysUtils, sqlite3conn, sqldb, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ActnList, Menus, DBGrids, DBCtrls, CommonUnit, DM;
+  StdCtrls, ActnList, Menus, DBGrids, DBCtrls, ExtCtrls, Buttons, CommonUnit,
+  DM;
 
 type
 
   { TMainForm1 }
 
   TMainForm1 = class(TForm)
-    Button1: TButton;
     DBGrid1: TDBGrid;
     DBGrid2: TDBGrid;
-    DBGrid3: TDBGrid;
     DelPrjAction: TAction;
     ClosePrjAction: TAction;
     FormatAction: TAction;
@@ -40,9 +39,16 @@ type
     ChangeUserAction: TAction;
     ActionList1: TActionList;
     ActionImages: TImageList;
-    procedure Button1Click(Sender: TObject);
+    Panel1: TPanel;
+    Panel2: TPanel;
+    Panel3: TPanel;
+    SpeedButton1: TSpeedButton;
+    SpeedButton2: TSpeedButton;
+    SpeedButton3: TSpeedButton;
+    SpeedButton4: TSpeedButton;
+    SpeedButton5: TSpeedButton;
+    Splitter1: TSplitter;
     procedure ChangeUserActionExecute(Sender: TObject);
-    procedure DBComboBox1Change(Sender: TObject);
     procedure ExitAppActionExecute(Sender: TObject);
     procedure FormatActionExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -54,10 +60,11 @@ type
     AppStarted : boolean;
     function GetConfigFile : boolean;
     function GetConfigValues : boolean;
+    procedure SetAccessibility;
   public
     DBFile,
     ConfigFile               : string;
-    CurrentUser    : TUserRec;
+    //CurrentUser    : TUserRec;
     CurrentBlock   : TBlock;
     CurrentProject : TPrjRec;
     procedure ShowLogin;
@@ -75,8 +82,8 @@ uses  StrUtils, LCLType, IniFiles, LoginFrm, ListFrm, GetFileFrm, ProjectFrm, Pr
 procedure TMainForm1.FormCreate(Sender: TObject);
 begin
   AppStarted:=True;
-  CurrentUser := TUserRec.Create;
-  CurrentUser.Clear;
+//  CurrentUser := TUserRec.Create;
+//  CurrentUser.Clear;
   CurrentBlock := TBlock.Create;
   CurrentBlock.Clear;
   CurrentProject := TPrjRec.Create;
@@ -98,37 +105,25 @@ begin
   CanClose:=True;
 end;
 
-
-procedure TMainForm1.ChangeUserActionExecute(Sender: TObject);
+procedure TMainForm1.SetAccessibility;
 begin
-  CurrentUser.Clear;
-  self.Caption:= AppHeader;
-  ShowLogin;
+  if DM1.GetCurrentUserId>0 then
+  begin
+    NewPrjAction.Enabled := True;
+    OpenPrjAction.Enabled:=True;
+    DelPrjAction.Enabled:=True;
+    if DM1.GetCurrentUserRole=USER_ROLE_ADMIN then FormatAction.Enabled:=False
+    else FormatAction.Enabled:=True;
+  end
+  else
+  begin
+    NewPrjAction.Enabled := False;
+    OpenPrjAction.Enabled:=False;
+    DelPrjAction.Enabled:=False;
+    FormatAction.Enabled:=False;
+  end;
 end;
 
-procedure TMainForm1.DBComboBox1Change(Sender: TObject);
-begin
-
-end;
-
-procedure TMainForm1.Button1Click(Sender: TObject);
-begin
-  DM1.Projects.Open;
-  DM1.Templates.Open;
-  DM1.Blocks.Open;
-
-end;
-
-
-procedure TMainForm1.ExitAppActionExecute(Sender: TObject);
-begin
-  Close;
-end;
-
-procedure TMainForm1.FormatActionExecute(Sender: TObject);
-begin
-  TaskForm.Format(1,ExpandFileName('Lorem ipsum.docx'),0{Word});
-end;
 
 procedure TMainForm1.FormShow(Sender: TObject);
 begin
@@ -158,7 +153,28 @@ begin
     DM1.DBConnect;
     //---
     ShowLogin;
+    //---
+    SetAccessibility;
   end;
+end;
+
+procedure TMainForm1.ChangeUserActionExecute(Sender: TObject);
+begin
+  //CurrentUser.Clear;
+  self.Caption:= AppHeader;
+  ShowLogin;
+end;
+
+
+procedure TMainForm1.ExitAppActionExecute(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TMainForm1.FormatActionExecute(Sender: TObject);
+begin
+  //TODO: ???
+  TaskForm.Format(1,ExpandFileName('Lorem ipsum.docx'),0{Word});
 end;
 
 
@@ -212,7 +228,8 @@ end;
 
 procedure TMainForm1.OpenPrjActionExecute(Sender: TObject);
 begin
-  if CurrentUser.id <=0 then Exit;
+  {
+  if DM1.GetCurrentUserId <=0 then Exit;
   // prepare SQLQuery
   with DM1.SQLQuery1 do
   begin
@@ -257,7 +274,7 @@ begin
   finally
     Free;
   end;
-
+ }
 end;
 
 
@@ -265,13 +282,16 @@ procedure TMainForm1.ShowLogin;
 begin
   with TLoginForm.Create(self) do
   try
-    if ShowModal <> mrOK then Close; // exiting from app
+    if ShowModal <> mrOK then  self.Close; // exiting from app ???
     // CurrentUser was set in LoginForm
   finally
     Free;
   end;
-  self.Caption:= AppHeader + ' : ' + CurrentUser.name;
-  if CurrentUser.super then  self.Caption:= self.Caption + ' (***)';
+  self.Caption:= AppHeader + ' : ' + DM1.GetCurrentUserName;
+  if DM1.GetCurrentUserRole=USER_ROLE_ADMIN then  self.Caption:= self.Caption + ' (***)';
+  DM1.Projects.Open;
+  DM1.Templates.Open;
+  DM1.Blocks.Open;
 end;
 
 

@@ -18,9 +18,10 @@ type
   TDM1 = class(TDataModule)
     Blocks: TSQLQuery;
     Blocks_DS: TDataSource;
-    BlockTran: TSQLTransaction;
+    Users: TSQLQuery;
     Projects_DS: TDataSource;
     DataSource1: TDataSource;
+    Users_DS: TDataSource;
     Temp_DS: TDataSource;
     SQLite3Connection1: TSQLite3Connection;
     SQLQuery1: TSQLQuery;
@@ -28,9 +29,7 @@ type
     Projects: TSQLQuery;
     SQLScript1: TSQLScript;
     SQLTransaction1: TSQLTransaction;
-    ProjectTran: TSQLTransaction;
     TranScript: TSQLTransaction;
-    TempTran: TSQLTransaction;
     SQLTransactionMain: TSQLTransaction;
   private
 
@@ -39,6 +38,10 @@ type
     function GetLastRowId : integer;
     //-- users
     function CheckUser(login,password:string) : integer; // res > 0 - OK;  -1 - wrong login/password; -999 - DB not connected
+    function GetCurrentUserId:integer;
+    function GetCurrentUserRole:integer;
+    function GetCurrentUserName:string;
+    //
     //-- Templates
     procedure BlocksOpen;
     function GetBlocksFromTmp(tmpid:integer): TObjectList;
@@ -99,6 +102,7 @@ begin
   end;
 end;
 
+{Users}
 function TDM1.CheckUser(login,password:string): integer;
 begin
   Result := -1;
@@ -107,31 +111,58 @@ begin
     Result := -999;
     Exit;
   end;
-  with SQLQuery1 do
+  with Users do
   begin
     Close;
     sql.Text:='SELECT id,username,superuser,password FROM users WHERE login=:lo';
     ParamByName('lo').Value:=login;
     try
-      try
-        Open;
-        if IsEmpty then raise Exception.Create('user not found');
-        if FieldByName('password').AsString <> password then raise Exception.Create('wrong password');
-        Result := FieldByName('id').AsInteger;
-        MainForm1.CurrentUser.id:= Result;
-        MainForm1.CurrentUser.name:= FieldByName('username').AsString;
-        MainForm1.CurrentUser.super:= FieldByName('superuser').AsString='*';
-        // OK
-      except
-        Exit;
-      end;
-    finally
+      Open;
+      if IsEmpty then raise Exception.Create('user not found');
+      if FieldByName('password').AsString <> password then raise Exception.Create('wrong password');
+      Result := FieldByName('id').AsInteger;
+      {MainForm1.CurrentUser.id:= Result;
+      MainForm1.CurrentUser.name:= FieldByName('username').AsString;
+      MainForm1.CurrentUser.super:= FieldByName('superuser').AsString='*';}
+      // OK
+    except
       Close;
+      Exit;
     end;
+    // не закрывать dataset, если пользователь найден
   end;
 end;
 
+function TDM1.GetCurrentUserId:integer;
+begin
+  Result := -1;
+  // DataSet must be opened!!
+  if not Users.Active then Exit; //TODO: debug exit code
+  if Users.IsEmpty then Exit;
+  Users.First;
+  Result := Users.FieldByName('id').AsInteger;
+end;
 
+function TDM1.GetCurrentUserRole:integer;
+begin
+  Result := -1;
+  // DataSet must be opened!!
+  if not Users.Active then Exit; //TODO: debug exit code
+  if Users.IsEmpty then Exit;
+  Users.First;
+  if Users.FieldByName('superuser').AsString='*' then Result := USER_ROLE_ADMIN
+  else Result := USER_ROLE_DEFAULT;
+end;
+
+function TDM1.GetCurrentUserName:string;
+begin
+  Result := '';
+  // DataSet must be opened!!
+  if not Users.Active then Exit; //TODO: debug exit code
+  if Users.IsEmpty then Exit;
+  Users.First;
+  Result := Users.FieldByName('username').AsString;
+end;
 
 { Templates }
 
@@ -359,7 +390,7 @@ begin
     SQL.Text := 'INSERT INTO projects (prjname, prjcreated, prjmodified,prjinfo, user_id) VALUES (:prj_name,CURRENT_DATE,CURRENT_DATE,:info, :userid);';
     SQLQuery1.ParamByName('prj_name').AsString:=MD5Print(MD5String(Info));
     SQLQuery1.ParamByName('info').AsString:=Info;
-    SQLQuery1.ParamByName('userid').AsInteger:=MainForm1.CurrentUser.id;
+    SQLQuery1.ParamByName('userid').AsInteger:=DM1.GetCurrentUserId; //MainForm1.CurrentUser.id;
     try
       ExecSQL;
       if SQLTransaction.Active then SQLTransaction.Commit;
