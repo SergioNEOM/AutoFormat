@@ -41,8 +41,15 @@ type
     function GetCurrentUserId:integer;
     function GetCurrentUserRole:integer;
     function GetCurrentUserName:string;
-    //
-    //-- Templates
+    function AddUser(login, pass, username : string; admin : boolean=False):integer;
+    function DelUser(user_id:integer=-1):boolean;
+    //-- projects
+    function AddProject(Info: string='') : integer;
+    function GetCurrentProjectId : integer;
+    function GetCurrentProjectInfo : string;
+    function GetProject(prid : integer) : boolean;
+    //function GetProjectFields:boolean;
+    //-- blocks
     procedure BlocksOpen;
     function GetBlocksFromTmp(tmpid:integer): TObjectList;
     procedure FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
@@ -50,10 +57,6 @@ type
     function insertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
     function UpdBlockInDB(blk : TBlock; temp_id : integer = -1):boolean;
     function SaveBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
-    //-- projects
-    function AddProject(Info: string='') : integer;
-    function GetProject(prid : integer) : boolean;
-    function GetProjectFields:boolean;
     //-- templates
     function GetTemplatesOfProject(prjid:integer):TObjectList;
     function InsertTemplate(prj_id: integer; TempName,FName: string):integer;
@@ -66,7 +69,7 @@ implementation
 
 {$R *.lfm}
 
-uses MainForm,  StrUtils, md5 ;
+uses MainForm,  StrUtils ;
 
 
 function TDM1.DBConnect : boolean;
@@ -160,9 +163,161 @@ begin
   // DataSet must be opened!!
   if not Users.Active then Exit; //TODO: debug exit code
   if Users.IsEmpty then Exit;
-  Users.First;
+  Users.First;      // должна быть только одна запись с таким набором login/pass
   Result := Users.FieldByName('username').AsString;
 end;
+
+function TDM1.AddUser(login, pass, username : string; admin : boolean=False):integer;
+begin
+  Result := -1;
+  if IsEmptyStr(login, [' ',#9,#10,#13]) then Exit;   //TODO: debug log -> login is empty
+  //if IsEmptyStr(pass, [' ',#9,#10,#13]) then Exit;   //TODO: debug log -> pass is empty
+  with SQLQuery1 do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Text := 'INSERT INTO users (username, login, password, superuser) VALUES (:uname,:ulogin,:upass,:super);';
+    SQLQuery1.ParamByName('uname').AsString:=username;
+    SQLQuery1.ParamByName('ulogin').AsString:=login;
+    SQLQuery1.ParamByName('upass').AsString:=HashPass(pass);
+    if admin then SQLQuery1.ParamByName('super').AsString:='*'
+    else SQLQuery1.ParamByName('super').AsString:='' ;
+    try
+      ExecSQL;
+      if SQLTransaction.Active then SQLTransaction.CommitRetaining;
+      Result := GetLastRowId;
+      if Result>0 then
+        if not Users.Locate('id',Result,[]) then Users.First;  // if not located new record, go to first
+    finally
+      Close;
+    end;
+  end;
+end;
+
+
+function TDM1.DelUser(user_id:integer=-1):boolean;
+begin
+  // Удалять может только админ (SuperUser)
+  // Себя удалять нельзя!!!
+  Result := False;
+  if user_id <=0 then Exit;   //TODO: debug log -> no user to delete
+  if GetCurrentUserRole <> USER_ROLE_ADMIN then Exit; //TODO: debug log -> only admin can delete users
+  if user_id = GetCurrentUserId then Exit ; //TODO: debug log -> user can't delete yourself
+  //
+  with SQLQuery1 do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Text := 'DELETE FROM users WHERE id=:uid;';
+    SQLQuery1.ParamByName('uid').AsInteger:=user_id;
+    try
+      ExecSQL;
+      if SQLTransaction.Active then SQLTransaction.CommitRetaining;
+      Result := True;          //GetLastRowId --??;
+    finally
+      Close;
+    end;
+  end;
+end;
+
+
+
+//***************
+//* Projects
+//***************
+
+function TDM1.AddProject(Info: string='') : integer;
+begin
+  Result := -1;
+  if DM1.GetCurrentUserId<=0 then Exit;
+  //TODO:  SQLite3 version only (twin operation: insert + get last row id) !!!!
+  If IsEmptyStr(Info,[' ']) then Info := 'Project ('+DateToStr(now)+')';
+  with SQLQuery1 do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Text := 'INSERT INTO projects (prjname, prjcreated, prjmodified,prjinfo, user_id) VALUES (:prj_name,CURRENT_DATE,CURRENT_DATE,:info, :userid);';
+    SQLQuery1.ParamByName('prj_name').AsString:=HashPass(Info);
+    SQLQuery1.ParamByName('info').AsString:=Info;
+    SQLQuery1.ParamByName('userid').AsInteger:=DM1.GetCurrentUserId;
+    try
+      ExecSQL;
+      if SQLTransaction.Active then SQLTransaction.Commit;
+      Result := GetLastRowId;
+      if Result>0 then
+        if not Projects.Locate('id',Result,[]) then Projects.First;  // if not located new record, go to first
+    finally
+      Close;
+    end;
+  end;
+  //TODO:  if PostgreSQL need use 'INSERT ... RETURNING id'  in one query!!!
+end;
+
+
+function TDM1.GetCurrentProjectId:integer;
+begin
+  //TODO: объединить в одну функцию со вторым параметром - TDataSet (users, projects, templates)
+  Result := -1;
+  // DataSet must be opened!!
+  if not Projects.Active then Exit; //TODO: debug exit code
+  if Projects.IsEmpty then Exit;
+  Result := Projects.FieldByName('id').AsInteger;
+end;
+
+function TDM1.GetCurrentProjectInfo:string;
+begin
+  Result := '';
+  // DataSet must be opened!!
+  if not Projects.Active then Exit; //TODO: debug exit code
+  if Projects.IsEmpty then Exit;
+  Result := Projects.FieldByName('prjinfo').AsString;
+end;
+
+
+function TDM1.GetProject(prid : integer) : boolean;
+begin
+  Result := False;
+{
+if prid <= 0 then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    //TODO: SQLite SQL script !!
+    SQL.Text:='SELECT p.id,p.prjdate,p.prjinfo FROM projects p WHERE p.id=:prid;';
+    ParamByName('prid').AsInteger:=prid;
+    try
+      Open;
+      if RecordCount<1 then Exit;
+      First;
+      Result := GetProjectFields;
+    except
+      Exit;
+    end;
+  finally
+    Close;
+  end;
+}
+end;
+
+{ deprecated !!!!!
+function TDM1.GetProjectFields : boolean;
+begin
+
+  try
+    MainForm1.CurrentProject.SetPrj(
+      SQLQuery1.FieldByName('id').AsInteger,
+      SQLQuery1.FieldByName('prjcreated').AsDateTime,
+      SQLQuery1.FieldByName('prjmodified').AsDateTime,
+      SQLQuery1.FieldByName('prjinfo').AsString
+    );
+    Result := True;
+  except
+    Result := False;
+  end;
+end;
+}
+
+//**************
 
 { Templates }
 
@@ -376,70 +531,6 @@ begin
 end;
 
 
-{Projects}
-
-function TDM1.AddProject(Info: string='') : integer;
-begin
-  Result := -1;
-  //TODO:  SQLite3 only (twin operation: insert + get last row id) !!!!
-  If IsEmptyStr(Info,[' ']) then Info := 'Project ('+DateToStr(now)+')';
-  with SQLQuery1 do
-  begin
-    Close;
-    SQL.Clear;
-    SQL.Text := 'INSERT INTO projects (prjname, prjcreated, prjmodified,prjinfo, user_id) VALUES (:prj_name,CURRENT_DATE,CURRENT_DATE,:info, :userid);';
-    SQLQuery1.ParamByName('prj_name').AsString:=MD5Print(MD5String(Info));
-    SQLQuery1.ParamByName('info').AsString:=Info;
-    SQLQuery1.ParamByName('userid').AsInteger:=DM1.GetCurrentUserId; //MainForm1.CurrentUser.id;
-    try
-      ExecSQL;
-      if SQLTransaction.Active then SQLTransaction.Commit;
-      Result := GetLastRowId;
-    finally
-      Close;
-    end;
-  end;
-
-  //TODO:  if PostgreSQL need use 'INSERT ... RETURNING id'  in one query!!!
-end;
-
-function TDM1.GetProject(prid : integer) : boolean;
-begin
-  Result := False;
-  if prid <= 0 then Exit;
-  with SQLQuery1 do
-  try
-    Close;
-    //TODO: SQLite SQL script !!
-    SQL.Text:='SELECT p.id,p.prjdate,p.prjinfo FROM projects p WHERE p.id=:prid;';
-    ParamByName('prid').AsInteger:=prid;
-    try
-      Open;
-      if RecordCount<1 then Exit;
-      First;
-      Result := GetProjectFields;
-    except
-      Exit;
-    end;
-  finally
-    Close;
-  end;
-end;
-
-function TDM1.GetProjectFields : boolean;
-begin
-  try
-    MainForm1.CurrentProject.SetPrj(
-      SQLQuery1.FieldByName('id').AsInteger,
-      SQLQuery1.FieldByName('prjcreated').AsDateTime,
-      SQLQuery1.FieldByName('prjmodified').AsDateTime,
-      SQLQuery1.FieldByName('prjinfo').AsString
-    );
-    Result := True;
-  except
-    Result := False;
-  end;
-end;
 
 function TDM1.InsertTemplate(prj_id: integer; TempName,FName: string):integer;
 begin

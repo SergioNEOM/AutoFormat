@@ -86,7 +86,7 @@
       <Unit7>
         <Filename Value="projectfrm.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="ProjectForm"/>
+        <ComponentName Value="BlocksForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ProjectFrm"/>

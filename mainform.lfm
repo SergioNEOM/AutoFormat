@@ -1,14 +1,13 @@
 object MainForm1: TMainForm1
   Left = 362
-  Height = 400
+  Height = 467
   Top = 164
-  Width = 750
+  Width = 673
   Caption = 'Auto Format'
-  ClientHeight = 375
-  ClientWidth = 750
-  Constraints.MinHeight = 400
-  Constraints.MinWidth = 750
-  DesignTimePPI = 120
+  ClientHeight = 442
+  ClientWidth = 673
+  Constraints.MinHeight = 360
+  Constraints.MinWidth = 600
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -16,16 +15,18 @@ object MainForm1: TMainForm1
   LCLVersion = '2.2.0.4'
   object DBGrid1: TDBGrid
     Left = 0
-    Height = 375
+    Height = 420
     Top = 0
-    Width = 250
+    Width = 200
     Align = alLeft
     AutoEdit = False
     Color = clWindow
     Columns = <    
       item
+        MinSize = 8
+        MaxSize = 160
         Title.Caption = 'prjname'
-        Width = 70
+        Width = 71
         FieldName = 'prjname'
       end>
     DataSource = DM1.Projects_DS
@@ -37,31 +38,33 @@ object MainForm1: TMainForm1
     TabOrder = 0
   end
   object Splitter1: TSplitter
-    Left = 250
-    Height = 375
+    Left = 200
+    Height = 420
     Top = 0
-    Width = 6
+    Width = 5
     Color = clActiveCaption
     ParentColor = False
   end
   object Panel1: TPanel
-    Left = 256
-    Height = 375
+    Left = 205
+    Height = 420
     Top = 0
-    Width = 494
+    Width = 468
     Align = alClient
-    ClientHeight = 375
-    ClientWidth = 494
+    ClientHeight = 420
+    ClientWidth = 468
     TabOrder = 2
     object DBGrid2: TDBGrid
       Left = 1
-      Height = 198
-      Top = 176
-      Width = 436
+      Height = 278
+      Top = 141
+      Width = 421
       Align = alClient
       Color = clWindow
       Columns = <      
         item
+          MinSize = 8
+          MaxSize = 160
           Title.Caption = 'tmpname'
           FieldName = 'tmpname'
         end>
@@ -71,109 +74,152 @@ object MainForm1: TMainForm1
     end
     object Panel2: TPanel
       Left = 1
-      Height = 175
+      Height = 140
       Top = 1
-      Width = 492
+      Width = 466
       Align = alTop
-      ClientHeight = 175
-      ClientWidth = 492
+      ClientHeight = 140
+      ClientWidth = 466
       TabOrder = 1
       object SpeedButton4: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 10
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 8
+        Width = 32
+        Action = NewPrjAction
         Caption = '+'
       end
       object SpeedButton5: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 72
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 58
+        Width = 32
+        Action = DelPrjAction
         Caption = '-'
       end
     end
     object Panel3: TPanel
-      Left = 437
-      Height = 198
-      Top = 176
-      Width = 56
+      Left = 422
+      Height = 278
+      Top = 141
+      Width = 45
       Align = alRight
       BevelInner = bvRaised
       BevelOuter = bvLowered
-      ClientHeight = 198
-      ClientWidth = 56
+      ClientHeight = 278
+      ClientWidth = 45
       TabOrder = 2
       object SpeedButton1: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 22
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 18
+        Width = 32
+        Action = NewTmpAction
         Caption = '+'
+        Images = ActionImages
+        ImageIndex = 1
+        Spacing = 2
       end
       object SpeedButton2: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 84
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 67
+        Width = 32
+        Action = EditTmpAction
         Caption = '. . .'
       end
       object SpeedButton3: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 145
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 116
+        Width = 32
+        Action = DelTmpAction
         Caption = '-'
       end
     end
   end
+  object StatusBar1: TStatusBar
+    Left = 0
+    Height = 22
+    Top = 420
+    Width = 673
+    AutoSize = False
+    Font.Height = -13
+    Font.Name = 'Sans'
+    Panels = <    
+      item
+        Text = '1234567'
+        Width = 150
+      end    
+      item
+        Bevel = pbRaised
+        Text = '9876543210'
+        Width = 150
+      end    
+      item
+        Text = '********'
+        Width = 150
+      end>
+    ParentFont = False
+    SimplePanel = False
+  end
   object ActionList1: TActionList
     Images = ActionImages
-    Left = 50
-    Top = 130
+    Left = 40
+    Top = 104
     object ChangeUserAction: TAction
       Category = 'app'
       Caption = 'Сменить пользователя'
-      Hint = 'Change current user'
+      Hint = 'Смена пользователя'
       ImageIndex = 2
       OnExecute = ChangeUserActionExecute
     end
     object ExitAppAction: TAction
       Category = 'app'
       Caption = 'Exit'
-      Hint = 'Exit from app'
+      Hint = 'Выход из программы'
       ImageIndex = 0
       OnExecute = ExitAppActionExecute
     end
     object NewPrjAction: TAction
       Category = 'project'
       Caption = 'NewPrjAction'
+      Hint = 'Создать новый проект'
       OnExecute = NewPrjActionExecute
     end
-    object OpenPrjAction: TAction
-      Category = 'project'
-      Caption = 'OpenPrjAction'
+    object NewTmpAction: TAction
+      Category = 'document'
+      Caption = 'NewTmpjAction'
+      Hint = 'Добавить в проект новый файл шаблона'
       ImageIndex = 1
-      OnExecute = OpenPrjActionExecute
+      OnExecute = NewTmpActionExecute
       ShortCut = 16498
     end
     object FormatAction: TAction
       Category = 'document'
       Caption = 'FormatAction'
+      Hint = 'Сформировать итоговый документ'
       OnExecute = FormatActionExecute
-    end
-    object ClosePrjAction: TAction
-      Category = 'project'
-      Caption = 'ClosePrjAction'
     end
     object DelPrjAction: TAction
       Category = 'project'
       Caption = 'DelPrjAction'
+      Hint = 'Удалить проект'
+    end
+    object DelTmpAction: TAction
+      Category = 'document'
+      Caption = 'DelTmpAction'
+      Hint = 'Удалить шаблон из проекта'
+    end
+    object EditTmpAction: TAction
+      Category = 'document'
+      Caption = 'EditTmpAction'
+      Hint = 'Открыть шаблон'
     end
   end
   object ActionImages: TImageList
-    Left = 50
-    Top = 230
+    Left = 40
+    Top = 184
     Bitmap = {
       4C7A030000001000000010000000E60900000000000078DA1D96F953D4E71DC7
       FF81CE74FA4BDB1FD269A6495A9BA46D125B4D354DD436971A62E2190D601402
@@ -259,8 +305,8 @@ object MainForm1: TMainForm1
   end
   object MainMenu1: TMainMenu
     Images = ActionImages
-    Left = 50
-    Top = 10
+    Left = 40
+    Top = 8
     object MenuItem1: TMenuItem
       Caption = 'Приложение'
       object MenuItem2: TMenuItem
@@ -281,21 +327,24 @@ object MainForm1: TMainForm1
       object N1: TMenuItem
         Caption = '-'
       end
-      object MenuItem10: TMenuItem
-        Action = OpenPrjAction
-      end
-      object MenuItem3: TMenuItem
-        Action = ClosePrjAction
-      end
-      object N3: TMenuItem
-        Caption = '-'
-      end
       object MenuItem4: TMenuItem
         Action = DelPrjAction
       end
     end
     object MenuItem6: TMenuItem
       Caption = 'Документ'
+      object MenuItem3: TMenuItem
+        Action = NewTmpAction
+      end
+      object Separator2: TMenuItem
+        Caption = '-'
+      end
+      object MenuItem10: TMenuItem
+        Action = DelTmpAction
+      end
+      object Separator1: TMenuItem
+        Caption = '-'
+      end
       object MenuItem7: TMenuItem
         Action = FormatAction
       end

@@ -6,26 +6,28 @@ interface
 
 uses
   Classes, SysUtils, sqlite3conn, sqldb, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ActnList, Menus, DBGrids, DBCtrls, ExtCtrls, Buttons, CommonUnit,
-  DM;
+  StdCtrls, ActnList, Menus, DBGrids, DBCtrls, ExtCtrls, Buttons, ComCtrls,
+  CommonUnit, DM;
 
 type
 
   { TMainForm1 }
 
   TMainForm1 = class(TForm)
+    EditTmpAction: TAction;
+    DelTmpAction: TAction;
     DBGrid1: TDBGrid;
     DBGrid2: TDBGrid;
     DelPrjAction: TAction;
-    ClosePrjAction: TAction;
     FormatAction: TAction;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
+    Separator2: TMenuItem;
+    Separator1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
-    N3: TMenuItem;
     N1: TMenuItem;
     MenuItem5: TMenuItem;
     MenuItem6: TMenuItem;
@@ -33,7 +35,7 @@ type
     MenuItem8: TMenuItem;
     MenuItem9: TMenuItem;
     N2: TMenuItem;
-    OpenPrjAction: TAction;
+    NewTmpAction: TAction;
     NewPrjAction: TAction;
     ExitAppAction: TAction;
     ChangeUserAction: TAction;
@@ -48,6 +50,7 @@ type
     SpeedButton4: TSpeedButton;
     SpeedButton5: TSpeedButton;
     Splitter1: TSplitter;
+    StatusBar1: TStatusBar;
     procedure ChangeUserActionExecute(Sender: TObject);
     procedure ExitAppActionExecute(Sender: TObject);
     procedure FormatActionExecute(Sender: TObject);
@@ -55,7 +58,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure NewPrjActionExecute(Sender: TObject);
-    procedure OpenPrjActionExecute(Sender: TObject);
+    procedure NewTmpActionExecute(Sender: TObject);
   private
     AppStarted : boolean;
     function GetConfigFile : boolean;
@@ -64,9 +67,7 @@ type
   public
     DBFile,
     ConfigFile               : string;
-    //CurrentUser    : TUserRec;
     CurrentBlock   : TBlock;
-    CurrentProject : TPrjRec;
     procedure ShowLogin;
   end;
 
@@ -86,8 +87,8 @@ begin
 //  CurrentUser.Clear;
   CurrentBlock := TBlock.Create;
   CurrentBlock.Clear;
-  CurrentProject := TPrjRec.Create;
-  CurrentProject.Clear;
+  //CurrentProject := TPrjRec.Create;
+  //CurrentProject.Clear;
 end;
 
 procedure TMainForm1.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -97,6 +98,9 @@ begin
     if DM1.SQLTransaction1.Active then
     try
       DM1.SQLTransaction1.Commit;
+      if DM1.Blocks.Active then DM1.Blocks.Close;
+      if DM1.Templates.Active then DM1.Templates.Close;
+      if DM1.Projects.Active then DM1.Projects.Close;
     except
       DM1.SQLTransaction1.Rollback;
     end;
@@ -110,7 +114,7 @@ begin
   if DM1.GetCurrentUserId>0 then
   begin
     NewPrjAction.Enabled := True;
-    OpenPrjAction.Enabled:=True;
+    NewTmpAction.Enabled:=True;
     DelPrjAction.Enabled:=True;
     if DM1.GetCurrentUserRole=USER_ROLE_ADMIN then FormatAction.Enabled:=False
     else FormatAction.Enabled:=True;
@@ -118,7 +122,7 @@ begin
   else
   begin
     NewPrjAction.Enabled := False;
-    OpenPrjAction.Enabled:=False;
+    NewTmpAction.Enabled:=False;
     DelPrjAction.Enabled:=False;
     FormatAction.Enabled:=False;
   end;
@@ -222,11 +226,11 @@ begin
       Exit;
     end;
   end;
-  OpenPrjAction.Execute;
+  //NewTmpAction.Execute;
 end;
 
 
-procedure TMainForm1.OpenPrjActionExecute(Sender: TObject);
+procedure TMainForm1.NewTmpActionExecute(Sender: TObject);
 begin
   {
   if DM1.GetCurrentUserId <=0 then Exit;

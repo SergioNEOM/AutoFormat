@@ -29,7 +29,7 @@ var
 implementation
 
 {$R *.lfm}
-uses  StrUtils, LCLType, md5, DM;
+uses  StrUtils, LCLType, DM, CommonUnit;
 
 { TLoginForm }
 
@@ -42,7 +42,7 @@ begin
     Application.MessageBox('Empty field','',MB_ICONERROR+MB_OK);
     Exit;
   end;
-  mdStr := MD5Print(MD5String('SVS'+Trim(PassField.Text)+'SVS'));
+  mdStr := HashPass(Trim(PassField.Text));
   if DM1.CheckUser(Trim(LoginField.Text), mdStr)>0  then ModalResult:=mrOk
   else
   begin

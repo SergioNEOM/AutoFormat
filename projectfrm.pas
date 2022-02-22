@@ -10,21 +10,20 @@ uses
 
 type
 
-  { TProjectForm }
+  { TBlocksForm }
 
-  TProjectForm = class(TForm)
+  TBlocksForm = class(TForm)
     Button3: TButton;
     CentralPanel: TPanel;
-    ComboBox1: TComboBox;
+    Label1: TLabel;
+    Label2: TLabel;
     ListBox1: TListBox;
     OkButton: TBitBtn;
     CancelButton: TBitBtn;
     BottomPanel: TPanel;
-    OpenDialog1: TOpenDialog;
     PrjInfoLabel: TLabel;
-    SpeedButton1: TSpeedButton;
-    SpeedButton2: TSpeedButton;
     StaticText1: TStaticText;
+    StaticText2: TStaticText;
     TopPanel: TPanel;
     procedure Button3Click(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
@@ -49,7 +48,7 @@ type
   end;
 
 var
-  ProjectForm: TProjectForm;
+  BlocksForm: TBlocksForm;
 
 implementation
 
@@ -57,9 +56,9 @@ implementation
 
 uses LCLType, md5,  MainForm, DM, CommonUnit, InputMemoFrm, Processing;
 
-{ TProjectForm }
+{ TBlocksForm }
 
-{constructor TProjectForm.Create(TheOwner: TComponent; Proj_id : integer = -1);
+{constructor TBlocksForm.Create(TheOwner: TComponent; Proj_id : integer = -1);
 begin
   inherited Create(TheOwner);
   if Proj_id<=0 then         // no project ??? - error
@@ -70,12 +69,12 @@ begin
 end;
 }
 
-procedure TProjectForm.FormCreate(Sender: TObject);
+procedure TBlocksForm.FormCreate(Sender: TObject);
 begin
   BlocksWasChanged := False;
   TempsWasChanged  := False;
   LastTempIdx:=-1;
-  if MainForm1.CurrentProject.id <=0 then
+  if DM1.GetCurrentProjectId <=0 then
   begin
     // no current project ?
     // make sure:  will be no mistakes
@@ -87,18 +86,15 @@ begin
   else
   begin
     // Описание проекта
-    PrjInfoLabel.Caption:=MainForm1.CurrentProject.prjinfo;
+    PrjInfoLabel.Caption:=DM1.GetCurrentProjectInfo;
     // получить шаблоны
-    FillTemplates;
-    // для смены списка блоков после смены шаблона
-    if ComboBox1.Items.Count>0 then ComboBox1.ItemIndex:=0;
-    // у ComboBox свойство OnSelect  := FillBlocks (tmp_id)
-    FillBlocks;
+    //FillTemplates;
+    //FillBlocks;
     if ListBox1.Items.Count>0 then ListBox1.ItemIndex:=0;
   end;
 end;
 
-procedure TProjectForm.ListBox1SelectionChange(Sender: TObject; User: boolean);
+procedure TBlocksForm.ListBox1SelectionChange(Sender: TObject; User: boolean);
 begin
   if not Assigned(blklist) or
      (ListBox1.ItemIndex<0)  or
@@ -106,8 +102,9 @@ begin
   StaticText1.Caption:=TBlock(blklist[ListBox1.ItemIndex]).name;
 end;
 
-procedure TProjectForm.OkButtonClick(Sender: TObject);
+procedure TBlocksForm.OkButtonClick(Sender: TObject);
 begin
+  {
   //if MessageDlg('Подтверждение записи в БД','Информация о проекте будет записана в БД'#13#10'Уверены?',mtConfirmation, mbYesNo,0)=mrYes then
   //begin;
     // Save Blocks if changed
@@ -120,13 +117,15 @@ begin
     //TODO: Update Templates if changed
 
   // if all right, ModalResult := mrOk
+  }
   ModalResult:=mrOK;
 end;
 
-procedure TProjectForm.ComboBox1Select(Sender: TObject);
+procedure TBlocksForm.ComboBox1Select(Sender: TObject);
 var
   c : TModalResult;
 begin
+  {
   if LastTempIdx = ComboBox1.ItemIndex then Exit; // ничего нового не выбрано
   // new template selected, but old data not saved!!
   while BlocksWasChanged do
@@ -142,9 +141,10 @@ begin
   end;
   // for new template:
   FillBlocks;
+  }
 end;
 
-procedure TProjectForm.Button3Click(Sender: TObject);
+procedure TBlocksForm.Button3Click(Sender: TObject);
 begin
   // изменить информацию в блоке
   with TInputMemoForm.Create(self) do
@@ -162,14 +162,14 @@ begin
   end;
 end;
 
-procedure TProjectForm.CancelButtonClick(Sender: TObject);
+procedure TBlocksForm.CancelButtonClick(Sender: TObject);
 begin
   if BlocksWasChanged or TempsWasChanged then
     if MessageDlg('Подтверждение отмены','Изменения проекта не записаны в БД!'#13#10'Вы точно хотите отказаться от сохранения?',mtConfirmation,mbYesNo,'')<> mrYes then Exit;
   ModalResult:=mrCancel;
 end;
 
-procedure TProjectForm.SpeedButton1Click(Sender: TObject);
+procedure TBlocksForm.SpeedButton1Click(Sender: TObject);
 var
   t,i,r : integer;
   o : TStringList;
@@ -178,13 +178,14 @@ var
 begin
   //  кнопка добавления шаблона в проект
   //
+  {
   if not OpenDialog1.Execute then Exit;
   tmp := TTemplate.Create;
   tmp.Clear;
   //TODO: надо ли заполнять uid:
   tmp.uid:= MD5Print(MD5File(OpenDialog1.FileName));
   tmp.name := InputBox('Ввод данных','Введите название шаблона (мах 32 знака)','');
-  t := DM1.InsertTemplate(MainForm1.CurrentProject.id, tmp.name, OpenDialog1.FileName);
+  t := DM1.InsertTemplate(DM1.GetCurrentProjectId, tmp.name, OpenDialog1.FileName);
   // scan blocks...
   o := TaskForm.WordScanFile(OpenDialog1.FileName);
   if not Assigned(o) or (o.Count<1) then
@@ -206,16 +207,17 @@ begin
   ComboBox1.AddItem(tmp.name,tmp);
   //
   TempsWasChanged:=True;
+  }
 end;
 
-procedure TProjectForm.SpeedButton2Click(Sender: TObject);
+procedure TBlocksForm.SpeedButton2Click(Sender: TObject);
 begin
   // delete template from project ... ????
   //
   // if MessageDlg()=mrYes then begin delete...   TempsWasChanged:=True; end;
 end;
 
-function TProjectForm.AddProject: integer;
+function TBlocksForm.AddProject: integer;
 begin
   // insert into projects new rec
   // MainForm1.CurrentUser.project := new.id;
@@ -223,15 +225,14 @@ begin
 end;
 
 
-function TProjectForm.FillTemplates: boolean;
+function TBlocksForm.FillTemplates: boolean;
 var
   i : Integer;
 begin
   Result := False;
+  {
   // Получить шаблоны из БД
   tmplist := DM1.GetTemplatesOfProject(MainForm1.CurrentProject.id);
-  // ComboBox заполнить списком шаблонов в проекте:
-  ComboBox1.Clear;
   if tmplist.Count>0 then
   begin
     for i:=0 to tmplist.Count-1 do
@@ -241,13 +242,15 @@ begin
     end;
     Result := True;
   end;
+  }
 end;
 
 
-function TProjectForm.FillBlocks: boolean;
+function TBlocksForm.FillBlocks: boolean;
 var
   i : Integer;
 begin
+  {
   // пока планируется получать список блоков "на лету":
   // по id шаблона получаем в DataSet список блоков и заполняем ListBox (как вложенные объекты)
   // если не пойдёт, то запасной вариант:
@@ -281,6 +284,7 @@ begin
     end;
     Result := True;
   end;
+  }
 end;
 
 

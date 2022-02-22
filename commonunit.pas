@@ -9,11 +9,12 @@ uses
 
 resourcestring
   AppHeader = 'Auto Format';
+  MyChars   = 'SVS';
 
 const
      USER_ROLE_DEFAULT = 1;
-     USER_ROLE_ADMIN = 999;
      USER_ROLE_CREATOR = 99;
+     USER_ROLE_ADMIN = 999;
      //
      wdSeekMainDocument       =0;
      wdSeekPrimaryHeader      =1;
@@ -59,17 +60,6 @@ type
       procedure SetBlockData(const bid:integer=-1;const bord:integer=0; const bname:string=''; const binfo:string='');
   end;
 
-  {TPrjRec}
-  TPrjRec = class(TObject)
-    id         : integer;
-    created    : TDate;
-    modified   : TDate;
-    prjinfo: string;
-    public
-      procedure Clear;
-      procedure SetPrj(pid:integer=-1;cdate:TDate=0;mdate:TDate=0;pinfo:string='');
-  end;
-
   {TTemplate}
   TTemplate = class(TObject)
     id      : integer;
@@ -82,10 +72,17 @@ type
       procedure SetTmp(tid:integer=-1;tname:string='';tuid:string='');
   end;
 
+  function HashPass(pass:string):string;
 
 implementation
 
-uses StrUtils, LCLType, LoginFrm, ListFrm, GetFileFrm;
+uses StrUtils, LCLType, md5, LoginFrm, ListFrm, GetFileFrm;
+
+
+function HashPass(pass: string): string;
+begin
+  Result := MD5Print(MD5String(MyChars+Trim(pass)+MyChars));
+end;
 
 {TUserRec}
 procedure TUserRec.Clear;
@@ -113,21 +110,6 @@ begin
 end;
 //--------------------
 
-{TPrjRec}
-procedure TPrjRec.Clear;
-begin
-  self.SetPrj();
-end;
-
-procedure TPrjRec.SetPrj(pid:integer=-1;cdate:TDate=0;mdate:TDate=0;pinfo:string='');
-begin
-  self.id := pid;
-  self.created  := cdate;
-  self.modified := mdate;
-  self.prjinfo := pinfo;
-end;
-
-//--------------------
 
 {TTemplate}
 procedure TTemplate.Clear;
