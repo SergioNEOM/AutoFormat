@@ -16,6 +16,10 @@ const
      USER_ROLE_CREATOR = 99;
      USER_ROLE_ADMIN = 999;
      //
+     TASK_TEST       = 0;
+     TASK_WORD_SCAN  = 1;
+     TASK_WORD_WRITE = 2;
+     //
      wdSeekMainDocument       =0;
      wdSeekPrimaryHeader      =1;
      wdSeekFirstPageHeader    =2;

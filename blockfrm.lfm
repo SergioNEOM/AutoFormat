@@ -18,19 +18,6 @@ object BlocksForm: TBlocksForm
     ClientHeight = 136
     ClientWidth = 849
     TabOrder = 0
-    object PrjInfoLabel: TLabel
-      Left = 96
-      Height = 64
-      Top = 8
-      Width = 744
-      Anchors = [akTop, akLeft, akRight]
-      AutoSize = False
-      Caption = 'Project info'
-      Font.Color = clMaroon
-      Font.Height = -16
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
     object Label1: TLabel
       Left = 6
       Height = 17
@@ -47,13 +34,28 @@ object BlocksForm: TBlocksForm
       AutoSize = False
       Caption = 'Шаблон:'
     end
-    object StaticText2: TStaticText
+    object DBText1: TDBText
       Left = 96
-      Height = 46
-      Top = 82
-      Width = 745
-      Caption = 'Template info'
-      TabOrder = 0
+      Height = 32
+      Top = 8
+      Width = 744
+      AutoSize = False
+      DataField = 'prjinfo'
+      DataSource = DM1.Projects_DS
+      Font.Color = clMaroon
+      Font.Height = -16
+      Font.Name = 'Sans'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object DBText2: TDBText
+      Left = 96
+      Height = 40
+      Top = 80
+      Width = 734
+      AutoSize = False
+      DataField = 'tmpname'
+      DataSource = DM1.Temp_DS
     end
   end
   object BottomPanel: TPanel
@@ -99,26 +101,13 @@ object BlocksForm: TBlocksForm
     ClientHeight = 428
     ClientWidth = 849
     TabOrder = 2
-    object ListBox1: TListBox
-      Left = 16
-      Height = 398
-      Top = 8
-      Width = 216
-      Items.Strings = (
-        '<-- нет блоков -->'
-      )
-      ItemHeight = 23
-      OnSelectionChange = ListBox1SelectionChange
-      ScrollWidth = 214
-      TabOrder = 0
-    end
     object StaticText1: TStaticText
       Left = 256
       Height = 348
       Top = 8
       Width = 556
       Caption = '<-- нет информации -->'
-      TabOrder = 1
+      TabOrder = 0
     end
     object Button3: TButton
       Left = 424
@@ -127,6 +116,23 @@ object BlocksForm: TBlocksForm
       Width = 88
       Caption = 'Изменить'
       OnClick = Button3Click
+      TabOrder = 1
+    end
+    object DBGrid1: TDBGrid
+      Left = 11
+      Height = 408
+      Top = 8
+      Width = 229
+      AutoEdit = False
+      Color = clWindow
+      Columns = <      
+        item
+          Title.Caption = 'blockname'
+          FieldName = 'blockname'
+        end>
+      DataSource = DM1.Blocks_DS
+      Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgDisableDelete, dgDisableInsert]
+      ReadOnly = True
       TabOrder = 2
     end
   end

@@ -1,4 +1,4 @@
-unit ProjectFrm;
+unit Blockfrm;
 
 {$mode objfpc}{$H+}
 
@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  Buttons, ComCtrls, DBCtrls, EditBtn, contnrs {for TObjectList};
+  Buttons, ComCtrls, DBCtrls, EditBtn, DBGrids, contnrs {for TObjectList};
 
 type
 
@@ -15,21 +15,20 @@ type
   TBlocksForm = class(TForm)
     Button3: TButton;
     CentralPanel: TPanel;
+    DBGrid1: TDBGrid;
+    DBText1: TDBText;
+    DBText2: TDBText;
     Label1: TLabel;
     Label2: TLabel;
-    ListBox1: TListBox;
     OkButton: TBitBtn;
     CancelButton: TBitBtn;
     BottomPanel: TPanel;
-    PrjInfoLabel: TLabel;
     StaticText1: TStaticText;
-    StaticText2: TStaticText;
     TopPanel: TPanel;
     procedure Button3Click(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure ComboBox1Select(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure ListBox1SelectionChange(Sender: TObject; User: boolean);
     procedure OkButtonClick(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
@@ -78,7 +77,6 @@ begin
   begin
     // no current project ?
     // make sure:  will be no mistakes
-    PrjInfoLabel.Caption:='Ошибка!!!'#13#10' Нет текущего проекта!';
     TopPanel.Enabled:=False;
     CentralPanel.Enabled:=False;
     OkButton.Enabled:=False;
@@ -86,21 +84,12 @@ begin
   else
   begin
     // Описание проекта
-    PrjInfoLabel.Caption:=DM1.GetCurrentProjectInfo;
     // получить шаблоны
     //FillTemplates;
     //FillBlocks;
-    if ListBox1.Items.Count>0 then ListBox1.ItemIndex:=0;
   end;
 end;
 
-procedure TBlocksForm.ListBox1SelectionChange(Sender: TObject; User: boolean);
-begin
-  if not Assigned(blklist) or
-     (ListBox1.ItemIndex<0)  or
-     not Assigned(blklist[ListBox1.ItemIndex]) then Exit;;
-  StaticText1.Caption:=TBlock(blklist[ListBox1.ItemIndex]).name;
-end;
 
 procedure TBlocksForm.OkButtonClick(Sender: TObject);
 begin
@@ -149,11 +138,11 @@ begin
   // изменить информацию в блоке
   with TInputMemoForm.Create(self) do
   try
-    Memo1.Lines.Text:=TBlock(blklist[ListBox1.ItemIndex]).name;
+    //TODO: Memo1.Lines.Text:=TBlock(blklist[ListBox1.ItemIndex]).name;
     if ShowModal=mrOK then
     begin
       StaticText1.Caption := Memo1.Text;
-      TBlock(blklist[ListBox1.ItemIndex]).name := Memo1.Text;
+      //TODO: TBlock(blklist[ListBox1.ItemIndex]).name := Memo1.Text;
       //
       BlocksWasChanged := True;
     end;

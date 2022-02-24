@@ -14,15 +14,22 @@ type
   { TMainForm1 }
 
   TMainForm1 = class(TForm)
+    DelUserAction: TAction;
+    AddUserAction: TAction;
     EditTmpAction: TAction;
     DelTmpAction: TAction;
-    DBGrid1: TDBGrid;
-    DBGrid2: TDBGrid;
+    PrjDBGrid: TDBGrid;
+    TempDBGrid: TDBGrid;
     DelPrjAction: TAction;
     FormatAction: TAction;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
     MenuItem10: TMenuItem;
+    MenuItem11: TMenuItem;
+    MenuItem12: TMenuItem;
+    OpenDialog1: TOpenDialog;
+    Separator4: TMenuItem;
+    Separator3: TMenuItem;
     Separator2: TMenuItem;
     Separator1: TMenuItem;
     MenuItem2: TMenuItem;
@@ -52,6 +59,8 @@ type
     Splitter1: TSplitter;
     StatusBar1: TStatusBar;
     procedure ChangeUserActionExecute(Sender: TObject);
+    procedure DelPrjActionExecute(Sender: TObject);
+    procedure EditTmpActionExecute(Sender: TObject);
     procedure ExitAppActionExecute(Sender: TObject);
     procedure FormatActionExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -77,7 +86,7 @@ var
 implementation
 
 {$R *.lfm}
-uses  StrUtils, LCLType, IniFiles, LoginFrm, ListFrm, GetFileFrm, ProjectFrm, Processing;
+uses  StrUtils, LCLType, IniFiles, LoginFrm, ListFrm, GetFileFrm, Blockfrm, Processing;
 
 
 procedure TMainForm1.FormCreate(Sender: TObject);
@@ -95,14 +104,14 @@ procedure TMainForm1.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
   if DM1.SQLite3Connection1.Connected  then
   begin
-    if DM1.SQLTransaction1.Active then
+    if DM1.SQLTransactionMain.Active then
     try
-      DM1.SQLTransaction1.Commit;
+      DM1.SQLTransactionMain.Commit;
       if DM1.Blocks.Active then DM1.Blocks.Close;
       if DM1.Templates.Active then DM1.Templates.Close;
       if DM1.Projects.Active then DM1.Projects.Close;
     except
-      DM1.SQLTransaction1.Rollback;
+      DM1.SQLTransactionMain.Rollback;
     end;
     DM1.SQLite3Connection1.Connected:=False;
   end;
@@ -110,21 +119,48 @@ begin
 end;
 
 procedure TMainForm1.SetAccessibility;
+var
+  i, ur :integer;
 begin
-  if DM1.GetCurrentUserId>0 then
+  for i:= 0 to ActionList1.ActionCount-1 do
   begin
-    NewPrjAction.Enabled := True;
-    NewTmpAction.Enabled:=True;
-    DelPrjAction.Enabled:=True;
-    if DM1.GetCurrentUserRole=USER_ROLE_ADMIN then FormatAction.Enabled:=False
-    else FormatAction.Enabled:=True;
-  end
-  else
-  begin
+    TAction(ActionList1.Actions[i]).Enabled:=False;
+    {
+    AddUserAction.Enabled:=False;
+    DelUserAction.Enabled:=False;
     NewPrjAction.Enabled := False;
-    NewTmpAction.Enabled:=False;
     DelPrjAction.Enabled:=False;
+    NewTmpAction.Enabled:=False;
+    EditTmpAction.Enabled:=False;
+    DelTmpAction.Enabled:=False;
     FormatAction.Enabled:=False;
+    }
+  end;
+  //
+  ChangeUserAction.Enabled := True;
+  ExitAppAction.Enabled := True;
+  //--
+  if DM1.GetCurrentUserId<=0 then Exit;
+  ur := DM1.GetCurrentUserRole;
+  case ur of
+    USER_ROLE_ADMIN:
+      begin
+        AddUserAction.Enabled:=True;
+        DelUserAction.Enabled:=True;
+      end;
+    USER_ROLE_CREATOR:
+      begin
+        NewPrjAction.Enabled := True;
+        DelPrjAction.Enabled := True;
+        NewTmpAction.Enabled := True;
+        EditTmpAction.Enabled := True;
+        DelTmpAction.Enabled := True;
+        FormatAction.Enabled := True;
+      end;
+    else
+      begin
+        FormatAction.Enabled:=True;
+      end;
   end;
 end;
 
@@ -167,6 +203,23 @@ begin
   //CurrentUser.Clear;
   self.Caption:= AppHeader;
   ShowLogin;
+end;
+
+procedure TMainForm1.DelPrjActionExecute(Sender: TObject);
+begin
+  if MessageDlg('Подтвердите удаление','ВНИМАНИЕ!!!'+#13#10+'Проект, все шаблоны и все данные для заполнения будут удалены безвозвратно!'+#13#10+'Вы уверены?',mtConfirmation,mbYesNo,'')=mrYes then
+    if DM1.DelProject then PrjDBGrid.DataSource.DataSet.Refresh //TODO: debug log : project deleted
+    else showmessage('Ошибка удаления проекта');
+end;
+
+procedure TMainForm1.EditTmpActionExecute(Sender: TObject);
+begin
+  with TBlocksForm.Create(self) do
+  try
+    ShowModal;
+  finally
+    Free;
+  end;
 end;
 
 
@@ -225,13 +278,42 @@ begin
       Application.MessageBox('Не удалось добавить новый проект','ERROR',MB_ICONASTERISK+MB_OK);
       Exit;
     end;
+    PrjDBGrid.DataSource.DataSet.Refresh;
   end;
-  //NewTmpAction.Execute;
 end;
 
 
 procedure TMainForm1.NewTmpActionExecute(Sender: TObject);
+var
+  v : string;
 begin
+  v := '';
+  if not InputQuery('Новый шаблон:','Укажите наименование шаблона'+#13#10+'...или откажитесь от создания (кнопка "Cancel")',v)  then Exit;
+  // 0. Запрос имени шаблона
+  // 1. Выбрать файл (OpenFile Dialog)
+  // 2. Определить тип .... ?   Default - Word
+  // 3. Сканировать документ
+  // 4. Если блоки найдены, создать запись нового шаблона в БД, получить её id, сделать её текущей в DataSet
+  // 5. Найденные блоки записать в БД с привязкой к id нового шаблона
+  // 6. Сообщить пользователю количество найденных блоков.
+  if not OpenDialog1.Execute then Exit; //TODO: debug info: no file selected for new template
+  //...
+  { 3.
+  with TTaskForm.Create(self, DM1.GetCurrentProjectId, OpenDialog1.FileName, TASK_TEST {TASK_WORD_SCAN}) do
+  try
+    if ShowModal = mrOk then showmessage('Ok')
+    else ShowMessage('cancelled');
+  finally
+    Free;
+  end;
+  }
+  if DM1.AddTemplate(DM1.GetCurrentProjectId, v, OpenDialog1.FileName)<=0 then
+  begin
+    showmessage('error adding template');
+    Exit; //TODO: debug log : error adding template
+  end;
+  TempDBGrid.DataSource.DataSet.Refresh;
+
   {
   if DM1.GetCurrentUserId <=0 then Exit;
   // prepare SQLQuery
@@ -283,16 +365,24 @@ end;
 
 
 procedure TMainForm1.ShowLogin;
+var
+  prevUser : Integer;
 begin
+  prevUser:= DM1.GetCurrentUserId;
   with TLoginForm.Create(self) do
   try
-    if ShowModal <> mrOK then  self.Close; // exiting from app ???
-    // CurrentUser was set in LoginForm
+    if ShowModal <> mrOK then
+    begin
+      if prevUser<=0 then MainForm1.Close; // no prev user? exiting from app!, else - do nothing
+      Exit;
+    end;
   finally
     Free;
   end;
   self.Caption:= AppHeader + ' : ' + DM1.GetCurrentUserName;
   if DM1.GetCurrentUserRole=USER_ROLE_ADMIN then  self.Caption:= self.Caption + ' (***)';
+  self.SetFocus;
+  self.BringToFront;
   DM1.Projects.Open;
   DM1.Templates.Open;
   DM1.Blocks.Open;

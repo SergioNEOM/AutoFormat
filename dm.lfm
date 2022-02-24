@@ -8,7 +8,6 @@ object DM1: TDM1
     Connected = False
     LoginPrompt = False
     KeepConnection = False
-    Transaction = SQLTransaction1
     CharSet = 'UTF-8'
     AlwaysUseBigint = False
     Left = 72
@@ -17,17 +16,11 @@ object DM1: TDM1
   object SQLQuery1: TSQLQuery
     FieldDefs = <>
     Database = SQLite3Connection1
-    Transaction = SQLTransaction1
+    Transaction = SQLTransactionMain
     Params = <>
     Macros = <>
     Left = 72
     Top = 224
-  end
-  object SQLTransaction1: TSQLTransaction
-    Active = False
-    Database = SQLite3Connection1
-    Left = 72
-    Top = 176
   end
   object DataSource1: TDataSource
     DataSet = SQLQuery1

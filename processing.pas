@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs,
-  ComCtrls, Buttons, contnrs {for TObjectList},
+  ComCtrls, Buttons, StdCtrls, contnrs {for TObjectList},
   CommonUnit;
 
 type
@@ -16,14 +16,20 @@ type
   TTaskForm = class(TForm)
     BitBtn1: TBitBtn;
     ProgressBar1: TProgressBar;
+    StaticText1: TStaticText;
     procedure BitBtn1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     CanDo : boolean;
+    WPrj,
+    WType : integer;
+    WParam : string;
     function WordFormat(prj: integer; TargetFile: Widestring): boolean;
     procedure OtherFormat(TargetFile: Widestring);
   public
     blk : TBlock;
+    constructor Create(TheOwner:TComponent; prj_id : integer; WorkParam:string=''; WorkType: integer=0);
     function WordScanFile(FN:string): TStringList;
     function Format(prj: integer; TargetFile: Widestring; FileType:integer=0): boolean;
   end;
@@ -40,9 +46,31 @@ uses
     {$IFDEF WINDOWS} ComObj, {$ENDIF}
     StrUtils;
 
+constructor TTaskForm.Create(TheOwner:TComponent; prj_id : integer; WorkParam:string=''; WorkType: integer=0);
+begin
+  inherited Create(TheOwner);
+  WPrj:=prj_id;
+  WType:=WorkType;
+  WParam:=WorkParam;
+end;
+
 procedure TTaskForm.FormCreate(Sender: TObject);
 begin
-  CanDo:=True;
+  // CanDo :=  (WType>0) and (WParam<>''); WType=TASK_TEST ??
+  CanDo := True;
+end;
+
+procedure TTaskForm.FormShow(Sender: TObject);
+begin
+  case WType of
+    TASK_TEST       : OtherFormat(WParam);
+    TASK_WORD_SCAN  : WordScanFile(WParam);
+    TASK_WORD_WRITE : WordFormat(WPrj,WParam);
+  end;
+
+  if CanDo then ModalResult := mrOk
+  else ModalResult:=mrCancel;
+
 end;
 
 function TTaskForm.Format(prj: integer; TargetFile: Widestring; FileType:integer=0): boolean;
@@ -51,10 +79,7 @@ begin
     0: WordFormat(prj,TargetFile);
     //1: coming soon...
     else OtherFormat(TargetFile);
-
   end;
-  if CanDo then ModalResult:=mrOk
-  else ModalResult:=mrCancel;
 end;
 
 
@@ -342,6 +367,7 @@ end;
 procedure TTaskForm.OtherFormat(TargetFile: Widestring);
 begin
   ShowMessage('Format file of '#13#10+TargetFile+#13#10' isn''t recognized!');
+  CanDo := False;
 end;
 
 

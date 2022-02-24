@@ -28,7 +28,6 @@ type
     Templates: TSQLQuery;
     Projects: TSQLQuery;
     SQLScript1: TSQLScript;
-    SQLTransaction1: TSQLTransaction;
     TranScript: TSQLTransaction;
     SQLTransactionMain: TSQLTransaction;
   private
@@ -48,6 +47,7 @@ type
     function GetCurrentProjectId : integer;
     function GetCurrentProjectInfo : string;
     function GetProject(prid : integer) : boolean;
+    function DelProject : boolean;
     //function GetProjectFields:boolean;
     //-- blocks
     procedure BlocksOpen;
@@ -59,7 +59,7 @@ type
     function SaveBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
     //-- templates
     function GetTemplatesOfProject(prjid:integer):TObjectList;
-    function InsertTemplate(prj_id: integer; TempName,FName: string):integer;
+    function AddTemplate(prj_id: integer; TempName,FName: string):integer;
   end;
 
 var
@@ -97,7 +97,7 @@ begin
       First;
       Result := Fields[0].AsInteger;
     except
-      if SQLTransaction1.Active then SQLTransaction1.Rollback;
+      if SQLTransaction.Active then SQLTransaction.Rollback;
       Exit;
     end;
   finally
@@ -124,9 +124,6 @@ begin
       if IsEmpty then raise Exception.Create('user not found');
       if FieldByName('password').AsString <> password then raise Exception.Create('wrong password');
       Result := FieldByName('id').AsInteger;
-      {MainForm1.CurrentUser.id:= Result;
-      MainForm1.CurrentUser.name:= FieldByName('username').AsString;
-      MainForm1.CurrentUser.super:= FieldByName('superuser').AsString='*';}
       // OK
     except
       Close;
@@ -154,7 +151,9 @@ begin
   if Users.IsEmpty then Exit;
   Users.First;
   if Users.FieldByName('superuser').AsString='*' then Result := USER_ROLE_ADMIN
-  else Result := USER_ROLE_DEFAULT;
+  else
+    if Users.FieldByName('superuser').AsString='C' then Result := USER_ROLE_CREATOR
+    else Result := USER_ROLE_DEFAULT;
 end;
 
 function TDM1.GetCurrentUserName:string;
@@ -171,7 +170,7 @@ function TDM1.AddUser(login, pass, username : string; admin : boolean=False):int
 begin
   Result := -1;
   if IsEmptyStr(login, [' ',#9,#10,#13]) then Exit;   //TODO: debug log -> login is empty
-  //if IsEmptyStr(pass, [' ',#9,#10,#13]) then Exit;   //TODO: debug log -> pass is empty
+  //if IsEmptyStr(pass, [' ',#9,#10,#13]) then Exit;   //TODO: pass may be empty ???   debug log -> pass is empty
   with SQLQuery1 do
   begin
     Close;
@@ -241,11 +240,16 @@ begin
     SQLQuery1.ParamByName('info').AsString:=Info;
     SQLQuery1.ParamByName('userid').AsInteger:=DM1.GetCurrentUserId;
     try
-      ExecSQL;
-      if SQLTransaction.Active then SQLTransaction.Commit;
-      Result := GetLastRowId;
-      if Result>0 then
-        if not Projects.Locate('id',Result,[]) then Projects.First;  // if not located new record, go to first
+      try
+        if not SQLTransaction.Active then SQLTransaction.StartTransaction;
+        ExecSQL;
+        if SQLTransaction.Active then SQLTransaction.CommitRetaining;
+        Result := GetLastRowId;
+        if Result>0 then
+          if not Projects.Locate('id',Result,[]) then Projects.First;  // if not located new record, go to first
+      except
+        if SQLTransaction.Active then SQLTransaction.RollbackRetaining;
+      end;
     finally
       Close;
     end;
@@ -316,6 +320,35 @@ begin
   end;
 end;
 }
+
+function TDM1.DelProject : boolean;
+var
+  pid : integer;
+begin
+  Result := False;
+  if not Projects.Active or (Projects.RecordCount<1) or Projects.EOF or Projects.BOF then Exit;
+  pid := DM1.GetCurrentProjectId;
+  if pid<=0 then Exit;
+  with SQLQuery1 do
+  begin
+    Close;
+    SQL.Clear;
+    SQL.Text := 'DELETE FROM projects where id=:pid;';
+    SQLQuery1.ParamByName('pid').AsInteger:=pid;
+    try
+      try
+        if not SQLTransaction.Active then SQLTransaction.StartTransaction;
+        ExecSQL;
+        if SQLTransaction.Active then SQLTransaction.CommitRetaining;
+        Result := True;
+      except
+        if SQLTransaction.Active then SQLTransaction.RollbackRetaining;
+      end;
+    finally
+      Close;
+    end;
+  end;
+end;
 
 //**************
 
@@ -532,20 +565,27 @@ end;
 
 
 
-function TDM1.InsertTemplate(prj_id: integer; TempName,FName: string):integer;
+function TDM1.AddTemplate(prj_id: integer; TempName,FName: string):integer;
 begin
   Result := -1;
   if (prj_id<=0) or not FileExists(FName) then Exit;
-  SQLQuery1.Close;
-  SQLQuery1.SQL.Text:='INSERT INTO templates (prj_id,tmpname,tmp) VALUES(:prjid,:tempname,:tmpfile);';
-  SQLQuery1.ParamByName('prjid').AsInteger := prj_id;
-  SQLQuery1.ParamByName('tempname').AsString := TempName;
+  with SQLQuery1 do
   try
-    SQLQuery1.ParamByName('tmpfile').LoadFromFile(FName,ftBlob);
-    SQLQuery1.ExecSQL;
-    Result := GetLastRowId;
+    Close;
+    SQL.Text:='INSERT INTO templates (prj_id,tmpname,tmp) VALUES(:prjid,:tempname,:tmpfile);';
+    ParamByName('prjid').AsInteger := prj_id;
+    ParamByName('tempname').AsString := TempName;
+    try
+      ParamByName('tmpfile').LoadFromFile(FName,ftBlob);
+      if not SQLTransaction.Active then SQLTransaction.StartTransaction;
+      ExecSQL;
+      if SQLTransaction.Active then SQLTransaction.CommitRetaining;
+      Result := GetLastRowId;
+    except
+      if SQLTransaction.Active then SQLTransaction.RollbackRetaining;
+    end;
   finally
-    SQLQuery1.Close;
+    Close;
   end;
 end;
 
