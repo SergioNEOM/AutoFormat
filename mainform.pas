@@ -19,6 +19,7 @@ type
     EditTmpAction: TAction;
     DelTmpAction: TAction;
     PrjDBGrid: TDBGrid;
+    ProgressBar1: TProgressBar;
     TempDBGrid: TDBGrid;
     DelPrjAction: TAction;
     FormatAction: TAction;
@@ -86,7 +87,7 @@ var
 implementation
 
 {$R *.lfm}
-uses  StrUtils, LCLType, IniFiles, LoginFrm, ListFrm, GetFileFrm, Blockfrm, Processing;
+uses  StrUtils, LCLType, IniFiles, LoginFrm, ListFrm, GetFileFrm, Blockfrm;
 
 
 procedure TMainForm1.FormCreate(Sender: TObject);
@@ -98,6 +99,17 @@ begin
   CurrentBlock.Clear;
   //CurrentProject := TPrjRec.Create;
   //CurrentProject.Clear;
+  StatusBar1.Panels[0].Width := StatusBar1.Canvas.TextWidth(StringOfChar('W',30));
+  //
+  ProgressBar1.Parent := StatusBar1;
+  ProgressBar1.Top:=4;
+  ProgressBar1.Left := StatusBar1.Panels[0].Width + 4;
+  ProgressBar1.Height := StatusBar1.ClientHeight - ProgressBar1.Top - 2;
+  ProgressBar1.Width := StatusBar1.ClientWidth - ProgressBar1.Left -  20 ;
+  ProgressBar1.Min := 0;
+  ProgressBar1.Position :=0;
+  ProgressBar1.Step := 1;
+  ProgressBar1.Smooth := False;//True;
 end;
 
 procedure TMainForm1.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -231,7 +243,7 @@ end;
 procedure TMainForm1.FormatActionExecute(Sender: TObject);
 begin
   //TODO: ???
-  TaskForm.Format(1,ExpandFileName('Lorem ipsum.docx'),0{Word});
+  //TaskForm.Format(1,ExpandFileName('Lorem ipsum.docx'),0{Word});
 end;
 
 
@@ -282,10 +294,11 @@ begin
   end;
 end;
 
-
+//TODO: set OpenDialog1.InitialDir=Applicaion.workPath ???
 procedure TMainForm1.NewTmpActionExecute(Sender: TObject);
 var
   v : string;
+  r : integer;
 begin
   v := '';
   if not InputQuery('Новый шаблон:','Укажите наименование шаблона'+#13#10+'...или откажитесь от создания (кнопка "Cancel")',v)  then Exit;
@@ -307,12 +320,18 @@ begin
     Free;
   end;
   }
-  if DM1.AddTemplate(DM1.GetCurrentProjectId, v, OpenDialog1.FileName)<=0 then
+  r := DM1.AddTemplate(DM1.GetCurrentProjectId, v, OpenDialog1.FileName);
+  if r<=0 then
   begin
     showmessage('error adding template');
     Exit; //TODO: debug log : error adding template
   end;
   TempDBGrid.DataSource.DataSet.Refresh;
+  if TempDBGrid.DataSource.DataSet.Active then TempDBGrid.DataSource.DataSet.Locate('id',r,[]);
+  r := WordScan2DB(r,OpenDialog1.FileName,ProgressBar1);
+  showmessage('Сканирование документа завершено'+#13#10+'Добавлено: '+IntToStr(r)+' блоков');
+  ProgressBar1.Position:=0;
+  if DM1.Blocks.Active then DM1.Blocks.Refresh;    //TODO: вынести в DM
 
   {
   if DM1.GetCurrentUserId <=0 then Exit;
@@ -379,6 +398,7 @@ begin
   finally
     Free;
   end;
+  //TODO: есть сомнения, правильно ли отрабатывает в случае отказа от выбора
   self.Caption:= AppHeader + ' : ' + DM1.GetCurrentUserName;
   if DM1.GetCurrentUserRole=USER_ROLE_ADMIN then  self.Caption:= self.Caption + ' (***)';
   self.SetFocus;

@@ -5,7 +5,7 @@ unit CommonUnit;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils,ComCtrls;
 
 resourcestring
   AppHeader = 'Auto Format';
@@ -60,6 +60,7 @@ type
     name   : string;
     info   : string;
     public
+      constructor Create(const bid:integer=-1;const bord:integer=0; const bname:string=''; const binfo:string='');
       procedure Clear;
       procedure SetBlockData(const bid:integer=-1;const bord:integer=0; const bname:string=''; const binfo:string='');
   end;
@@ -77,10 +78,13 @@ type
   end;
 
   function HashPass(pass:string):string;
+  function WordScan2DB(tmp_id:integer; FN:string; Gauge: TProgressBar=nil):integer;
 
 implementation
 
-uses StrUtils, LCLType, md5, LoginFrm, ListFrm, GetFileFrm;
+uses
+  {$IFDEF WINDOWS} ComObj, {$ENDIF}
+  StrUtils,  LCLType, md5, Dialogs, MainForm, DM, LoginFrm, ListFrm, GetFileFrm;
 
 
 function HashPass(pass: string): string;
@@ -100,6 +104,12 @@ end;
 //--------------------
 
 {TBlock}
+constructor TBlock.Create(const bid:integer=-1;const bord:integer=0; const bname:string=''; const binfo:string='');
+begin
+  inherited Create;
+  self.SetBlockData(bid,bord,bname,binfo);
+end;
+
 procedure TBlock.Clear;
 begin
   self.SetBlockData();
@@ -129,6 +139,80 @@ begin
 end;
 
 //--------------------
+function WordScan2DB(tmp_id:integer;FN:string; Gauge: TProgressBar=nil):integer;
+{$IFDEF WINDOWS}
+var
+   WA : OleVariant;
+   i, c , cc : Integer;
+   docycle : boolean;
+begin
+  Result := 0;       // on exit - counted blocks
+  try
+     WA := CreateOLEObject('Word.Application');
+  except
+     MessageDlg('Ошибка','Не могу начать работу с MS Word ('+FN+')',mtError,[mbOk],'');
+     Exit;
+  end;
+  //****
+  if Assigned(Gauge) then Gauge.Position:=0;
+  try
+    WA.Visible := False;
+    WA.Caption := 'AutoFormat: scan Word document';
+    WA.ScreenUpdating := False;
+    WA.Documents.Open(FN);
+    WA.ActiveWindow.View.&Type := 3 { wdPageView };
+    docycle:=True;
+    if Assigned(Gauge) then Gauge.Max:=8;
+    for c:=0 to 8 do  // 9 и 10 - не используются?
+    begin
+      if Assigned(Gauge) then Gauge.Position:=c; //TODO: Gauge.StepIt;
+      if not docycle then break;
+      // если флаг "колонтитул первой страницы" НЕ установлен, пропустить 2 и 5
+      if not WA.ActiveDocument.PageSetup.DifferentFirstPageHeaderFooter and
+          ((c = wdSeekFirstPageFooter) or (c = wdSeekFirstPageHeader)) then continue;
+      // если флаг "различать колонтитулы четных и нечетных страниц" НЕ установлен, пропустить 3 и 6
+      if not WA.Activedocument.PageSetup.OddAndEvenPagesHeaderFooter and
+          ((c = wdSeekEvenPagesHeader) or (c = wdSeekEvenPagesFooter)) then continue;
+      //
+      try
+        WA.ActiveWindow.View.SeekView := c;
+        //WA.ActiveWindow.ActivePane.View.SeekView := c;
+      except
+        // скорее всего, такой секции нет в документе
+        continue;
+      end;
+      while docycle do
+      begin
+        WA.Selection.Find.ClearFormatting;
+        WA.Selection.Find.Text :=  '\{\<*\>\}';       //'\{\<Block([0-9]@)\>\}';
+        WA.Selection.Find.MatchWildcards := True; // принимать знаки * ? как спецсимволы
+        WA.Selection.Find.Forward := True;
+        WA.Selection.Find.Wrap := wdFindStop; // останавливаться в конце документа(не начинать сначала)
+        WA.Selection.Find.Format := False;
+        WA.Selection.Find.MatchCase := False;
+        WA.Selection.Find.MatchWholeWord := False;
+        WA.Selection.Find.MatchSoundsLike := False;
+        WA.Selection.Find.MatchAllWordForms := False;
+        if not WA.Selection.Find.Execute then break;
+        inc(Result);
+        DM1.AddBlk2DB(tmp_id,WA.Selection.Text,Result);
+        //Application.ProcessMessages;
+      end; // while
+    end;  //  for c
+    WA.ActiveWindow.ActivePane.View.SeekView := Integer(wdSeekMainDocument);
+  finally
+     WA.ActiveDocument.Close;
+     WA.ScreenUpdating := True;
+     WA.Quit;
+  end;
+end;
+{$ELSE}
+begin
+  ShowMessage('Function "WordScanFile" can only work in the Windows');
+end;
+{$ENDIF}
+
+
 //--------------------
 {
 unit afmain;

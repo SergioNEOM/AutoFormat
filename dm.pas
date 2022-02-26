@@ -53,11 +53,13 @@ type
     procedure BlocksOpen;
     function GetBlocksFromTmp(tmpid:integer): TObjectList;
     procedure FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
-    function AddBlock2DB(blk : TBlock; temp_id : integer = -1):integer; // temp_id default =-1 --> to exclude bugs
+    function AddBlock2DB(blk : TBlock):integer;
+    function AddBlk2DB(temp_id: integer; blk: string; blord:integer=0):integer;
     function insertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
     function UpdBlockInDB(blk : TBlock; temp_id : integer = -1):boolean;
     function SaveBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
     //-- templates
+    function GetCurrentTemplateId : integer;
     function GetTemplatesOfProject(prjid:integer):TObjectList;
     function AddTemplate(prj_id: integer; TempName,FName: string):integer;
   end;
@@ -353,6 +355,14 @@ end;
 //**************
 
 { Templates }
+function TDM1.GetCurrentTemplateId:integer;
+begin
+  Result := -1;
+  // DataSet must be opened!!
+  if not Templates.Active then Exit; //TODO: debug exit code
+  if Templates.IsEmpty then Exit;
+  Result := Templates.FieldByName('id').AsInteger;
+end;
 
 procedure TDM1.BlocksOpen;
 begin
@@ -447,9 +457,39 @@ begin
   end;
 end;
 
-function TDM1.AddBlock2DB(blk : TBlock; temp_id : integer = -1):integer;
+function TDM1.AddBlk2DB(temp_id: integer; blk: string; blord:integer=0):integer;
 begin
   Result := -1;
+  temp_id:= GetCurrentTemplateId;
+  if (temp_id<=0) or IsEmptyStr(blk,[' ',#9,#10,#13]) then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text := 'INSERT INTO blocks (blockorder,blockname,tmp_id) '+
+             ' VALUES (:bord,:bname,:temp_id);';
+    try
+      ParamByName('bord').AsInteger := blord;
+      ParamByName('bname').AsString := blk;
+      ParamByName('temp_id').AsInteger := temp_id;
+      ExecSQL;
+      if Transaction.Active then TSQLTransaction(Transaction).CommitRetaining;
+      Result := GetLastRowId;
+    except
+      // showmessage('error... '); -?
+      if Transaction.Active then TSQLTransaction(Transaction).Rollback;
+      Exit;
+    end;
+  finally
+    Close;
+  end;
+end;
+
+function TDM1.AddBlock2DB(blk : TBlock):integer;
+var
+  temp_id : integer;
+begin
+  Result := -1;
+  temp_id:= GetCurrentTemplateId;
   if (temp_id<=0) or not Assigned(blk) then Exit;
   with SQLQuery1 do
   try
@@ -473,6 +513,7 @@ begin
     Close;
   end;
 end;
+
 
 function TDM1.InsertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean; // temp_id default =-1 --> to exclude bugs
 var

@@ -18,6 +18,7 @@ type
     ProgressBar1: TProgressBar;
     StaticText1: TStaticText;
     procedure BitBtn1Click(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
@@ -31,6 +32,7 @@ type
     blk : TBlock;
     constructor Create(TheOwner:TComponent; prj_id : integer; WorkParam:string=''; WorkType: integer=0);
     function WordScanFile(FN:string): TStringList;
+    function WordScan2DB(FN:string):integer;
     function Format(prj: integer; TargetFile: Widestring; FileType:integer=0): boolean;
   end;
 
@@ -44,7 +46,7 @@ implementation
 
 uses
     {$IFDEF WINDOWS} ComObj, {$ENDIF}
-    StrUtils;
+    StrUtils, DM;
 
 constructor TTaskForm.Create(TheOwner:TComponent; prj_id : integer; WorkParam:string=''; WorkType: integer=0);
 begin
@@ -62,14 +64,6 @@ end;
 
 procedure TTaskForm.FormShow(Sender: TObject);
 begin
-  case WType of
-    TASK_TEST       : OtherFormat(WParam);
-    TASK_WORD_SCAN  : WordScanFile(WParam);
-    TASK_WORD_WRITE : WordFormat(WPrj,WParam);
-  end;
-
-  if CanDo then ModalResult := mrOk
-  else ModalResult:=mrCancel;
 
 end;
 
@@ -87,6 +81,90 @@ procedure TTaskForm.BitBtn1Click(Sender: TObject);
 begin
   CanDo:=False;
 end;
+
+procedure TTaskForm.FormActivate(Sender: TObject);
+begin
+    case WType of
+    TASK_TEST       : OtherFormat(WParam);
+    TASK_WORD_SCAN  : WordScan2DB(WParam);  //WordScanFile(WParam);
+    TASK_WORD_WRITE : WordFormat(WPrj,WParam);
+  end;
+
+  if CanDo then ModalResult := mrOk
+  else ModalResult:=mrCancel;
+
+end;
+
+function TTaskForm.WordScan2DB(FN:string):integer;
+{$IFDEF WINDOWS}
+var
+   WA : OleVariant;
+   i, c , cc : Integer;
+   docycle : boolean;
+begin
+  Result := 0;       // on exit - counted blocks
+  try
+     WA := CreateOLEObject('Word.Application');
+  except
+     MessageDlg('Ошибка','Не могу начать работу с MS Word ('+FN+')',mtError,[mbOk],'');
+     Exit;
+  end;
+  //****
+  try
+    WA.Visible := False;
+    WA.Caption := 'AutoFormat: scan Word document';
+    WA.ScreenUpdating := False;
+    WA.Documents.Open(FN);
+    WA.ActiveWindow.View.&Type := 3 { wdPageView };
+    docycle:=True;
+    for c:=0 to 8 do  // 9 и 10 - не используются?
+    begin
+      if not docycle then break;
+      // если флаг "колонтитул первой страницы" НЕ установлен, пропустить 2 и 5
+      if not WA.ActiveDocument.PageSetup.DifferentFirstPageHeaderFooter and
+          ((c = wdSeekFirstPageFooter) or (c = wdSeekFirstPageHeader)) then continue;
+      // если флаг "различать колонтитулы четных и нечетных страниц" НЕ установлен, пропустить 3 и 6
+      if not WA.Activedocument.PageSetup.OddAndEvenPagesHeaderFooter and
+          ((c = wdSeekEvenPagesHeader) or (c = wdSeekEvenPagesFooter)) then continue;
+      //
+      try
+        WA.ActiveWindow.View.SeekView := c;
+        //WA.ActiveWindow.ActivePane.View.SeekView := c;
+      except
+        // скорее всего, такой секции нет в документе
+        continue;
+      end;
+      while docycle do
+      begin
+        WA.Selection.Find.ClearFormatting;
+        WA.Selection.Find.Text :=  '\{\<*\>\}';       //'\{\<Block([0-9]@)\>\}';
+        WA.Selection.Find.MatchWildcards := True; // принимать знаки * ? как спецсимволы
+        WA.Selection.Find.Forward := True;
+        WA.Selection.Find.Wrap := wdFindStop; // останавливаться в конце документа(не начинать сначала)
+        WA.Selection.Find.Format := False;
+        WA.Selection.Find.MatchCase := False;
+        WA.Selection.Find.MatchWholeWord := False;
+        WA.Selection.Find.MatchSoundsLike := False;
+        WA.Selection.Find.MatchAllWordForms := False;
+        if not WA.Selection.Find.Execute then break;
+        inc(Result);
+       // DM1.AddBlk2DB(WA.Selection.Text,Result);
+        Application.ProcessMessages;
+      end; // while
+    end;  //  for c
+    WA.ActiveWindow.ActivePane.View.SeekView := Integer(wdSeekMainDocument);
+    showmessage('Сканирование документа завершено'+#13#10+'Добавлено: '+IntToStr(Result)+' блоков');
+  finally
+     WA.ActiveDocument.Close;
+     WA.ScreenUpdating := True;
+     WA.Quit;
+  end;
+end;
+{$ELSE}
+begin
+  ShowMessage('Function "WordScanFile" can only work in the Windows');
+end;
+{$ENDIF}
 
 function TTaskForm.WordScanFile(FN:string) :TStringList;
 {$IFDEF WINDOWS}
@@ -161,6 +239,7 @@ begin
   ShowMessage('Function "WordScanFile" can only work in the Windows');
 end;
 {$ENDIF}
+
 
 
 //----
