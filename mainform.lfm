@@ -1,14 +1,13 @@
 object MainForm1: TMainForm1
   Left = 362
-  Height = 584
+  Height = 467
   Top = 164
-  Width = 841
+  Width = 673
   Caption = 'Auto Format'
-  ClientHeight = 559
-  ClientWidth = 841
-  Constraints.MinHeight = 450
-  Constraints.MinWidth = 750
-  DesignTimePPI = 120
+  ClientHeight = 442
+  ClientWidth = 673
+  Constraints.MinHeight = 360
+  Constraints.MinWidth = 600
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -16,16 +15,18 @@ object MainForm1: TMainForm1
   LCLVersion = '2.2.0.4'
   object PrjDBGrid: TDBGrid
     Left = 0
-    Height = 531
+    Height = 420
     Top = 0
-    Width = 250
+    Width = 200
     Align = alLeft
     AutoEdit = False
     Color = clWindow
     Columns = <    
       item
+        MinSize = 8
+        MaxSize = 160
         Title.Caption = 'prjname'
-        Width = 70
+        Width = 71
         FieldName = 'prjinfo'
       end>
     DataSource = DM1.Projects_DS
@@ -37,31 +38,33 @@ object MainForm1: TMainForm1
     TabOrder = 0
   end
   object Splitter1: TSplitter
-    Left = 250
-    Height = 531
+    Left = 200
+    Height = 420
     Top = 0
-    Width = 6
+    Width = 5
     Color = clActiveCaption
     ParentColor = False
   end
   object Panel1: TPanel
-    Left = 256
-    Height = 531
+    Left = 205
+    Height = 420
     Top = 0
-    Width = 585
+    Width = 468
     Align = alClient
-    ClientHeight = 531
-    ClientWidth = 585
+    ClientHeight = 420
+    ClientWidth = 468
     TabOrder = 2
     object TempDBGrid: TDBGrid
       Left = 1
-      Height = 354
-      Top = 176
-      Width = 527
+      Height = 278
+      Top = 141
+      Width = 421
       Align = alClient
       Color = clWindow
       Columns = <      
         item
+          MinSize = 8
+          MaxSize = 160
           Title.Caption = 'tmpname'
           FieldName = 'tmpname'
         end>
@@ -71,48 +74,48 @@ object MainForm1: TMainForm1
     end
     object Panel2: TPanel
       Left = 1
-      Height = 175
+      Height = 140
       Top = 1
-      Width = 583
+      Width = 466
       Align = alTop
-      ClientHeight = 175
-      ClientWidth = 583
+      ClientHeight = 140
+      ClientWidth = 466
       TabOrder = 1
       object SpeedButton4: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 10
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 8
+        Width = 32
         Action = NewPrjAction
         Caption = '+'
         ParentShowHint = False
       end
       object SpeedButton5: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 72
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 58
+        Width = 32
         Action = DelPrjAction
         Caption = '-'
         ParentShowHint = False
       end
     end
     object Panel3: TPanel
-      Left = 528
-      Height = 354
-      Top = 176
-      Width = 56
+      Left = 422
+      Height = 278
+      Top = 141
+      Width = 45
       Align = alRight
       BevelInner = bvRaised
       BevelOuter = bvLowered
-      ClientHeight = 354
-      ClientWidth = 56
+      ClientHeight = 278
+      ClientWidth = 45
       TabOrder = 2
       object SpeedButton1: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 22
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 18
+        Width = 32
         Action = NewTmpAction
         Caption = '+'
         Images = ActionImages
@@ -121,19 +124,19 @@ object MainForm1: TMainForm1
         ParentShowHint = False
       end
       object SpeedButton2: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 84
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 67
+        Width = 32
         Action = EditTmpAction
         Caption = '. . .'
         ParentShowHint = False
       end
       object SpeedButton3: TSpeedButton
-        Left = 8
-        Height = 40
-        Top = 145
-        Width = 40
+        Left = 6
+        Height = 32
+        Top = 116
+        Width = 32
         Action = DelTmpAction
         Caption = '-'
         ParentShowHint = False
@@ -142,35 +145,35 @@ object MainForm1: TMainForm1
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 28
-    Top = 531
-    Width = 841
+    Height = 22
+    Top = 420
+    Width = 673
     AutoSize = False
-    Font.Height = -16
+    Font.Height = -13
     Font.Name = 'Sans'
     Panels = <    
       item
         Text = '123456789012345678901234567890'
-        Width = 188
+        Width = 150
       end    
       item
         Text = '********'
-        Width = 188
+        Width = 150
       end>
     ParentFont = False
     SimplePanel = False
   end
   object ProgressBar1: TProgressBar
-    Left = 463
-    Height = 25
-    Top = 536
-    Width = 125
+    Left = 370
+    Height = 20
+    Top = 429
+    Width = 100
     TabOrder = 4
   end
   object ActionList1: TActionList
     Images = ActionImages
-    Left = 50
-    Top = 130
+    Left = 40
+    Top = 104
     object ChangeUserAction: TAction
       Category = 'app'
       Caption = 'Сменить пользователя'
@@ -215,6 +218,7 @@ object MainForm1: TMainForm1
       Category = 'document'
       Caption = 'DelTmpAction'
       Hint = 'Удалить шаблон из проекта'
+      OnExecute = DelTmpActionExecute
     end
     object EditTmpAction: TAction
       Category = 'document'
@@ -232,8 +236,8 @@ object MainForm1: TMainForm1
     end
   end
   object ActionImages: TImageList
-    Left = 50
-    Top = 230
+    Left = 40
+    Top = 184
     Bitmap = {
       4C7A030000001000000010000000E60900000000000078DA1D96F953D4E71DC7
       FF81CE74FA4BDB1FD269A6495A9BA46D125B4D354DD436971A62E2190D601402
@@ -319,8 +323,8 @@ object MainForm1: TMainForm1
   end
   object MainMenu1: TMainMenu
     Images = ActionImages
-    Left = 50
-    Top = 10
+    Left = 40
+    Top = 8
     object MenuItem1: TMenuItem
       Caption = 'Приложение'
       object MenuItem2: TMenuItem
@@ -380,7 +384,7 @@ object MainForm1: TMainForm1
     Title = 'Открыть файл шаблона'
     DefaultExt = '.*.docx'
     Filter = '*.doc|*.doc|*.docx|*.docx|Все файлы|*.*'
-    Left = 720
-    Top = 200
+    Left = 576
+    Top = 160
   end
 end

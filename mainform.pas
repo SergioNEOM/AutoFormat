@@ -61,6 +61,7 @@ type
     StatusBar1: TStatusBar;
     procedure ChangeUserActionExecute(Sender: TObject);
     procedure DelPrjActionExecute(Sender: TObject);
+    procedure DelTmpActionExecute(Sender: TObject);
     procedure EditTmpActionExecute(Sender: TObject);
     procedure ExitAppActionExecute(Sender: TObject);
     procedure FormatActionExecute(Sender: TObject);
@@ -220,8 +221,16 @@ end;
 procedure TMainForm1.DelPrjActionExecute(Sender: TObject);
 begin
   if MessageDlg('Подтвердите удаление','ВНИМАНИЕ!!!'+#13#10+'Проект, все шаблоны и все данные для заполнения будут удалены безвозвратно!'+#13#10+'Вы уверены?',mtConfirmation,mbYesNo,'')=mrYes then
-    if DM1.DelProject then PrjDBGrid.DataSource.DataSet.Refresh //TODO: debug log : project deleted
+    if DM1.DelProject then PrjDBGrid.DataSource.DataSet.Refresh //TODO: debug log : project was deleted
     else showmessage('Ошибка удаления проекта');
+end;
+
+procedure TMainForm1.DelTmpActionExecute(Sender: TObject);
+begin
+  if MessageDlg('Подтвердите удаление','ВНИМАНИЕ!!!'+#13#10+'Шаблон '+DM1.GetCurrentTempName+#13#10+
+     'и все данные для его заполнения будут удалены безвозвратно!'+#13#10+'Вы уверены?',mtConfirmation,mbYesNo,'')=mrYes then
+    if DM1.DelTemplate(DM1.GetCurrentTemplateId) then TempDBGrid.DataSource.DataSet.Refresh //TODO: debug log : template was deleted
+    else showmessage('Ошибка удаления шаблона');
 end;
 
 procedure TMainForm1.EditTmpActionExecute(Sender: TObject);
@@ -299,6 +308,7 @@ procedure TMainForm1.NewTmpActionExecute(Sender: TObject);
 var
   v : string;
   r : integer;
+  sc : TCursor;
 begin
   v := '';
   if not InputQuery('Новый шаблон:','Укажите наименование шаблона'+#13#10+'...или откажитесь от создания (кнопка "Cancel")',v)  then Exit;
@@ -328,8 +338,16 @@ begin
   end;
   TempDBGrid.DataSource.DataSet.Refresh;
   if TempDBGrid.DataSource.DataSet.Active then TempDBGrid.DataSource.DataSet.Locate('id',r,[]);
-  r := WordScan2DB(r,OpenDialog1.FileName,ProgressBar1);
+  //
+  sc := GetCursor; // save prev cursor
+  try
+    self.Cursor := crHourGlass;
+    r := WordScan2DB(r,OpenDialog1.FileName,ProgressBar1);
+  finally
+    self.Cursor := sc;
+  end;
   showmessage('Сканирование документа завершено'+#13#10+'Добавлено: '+IntToStr(r)+' блоков');
+  //
   ProgressBar1.Position:=0;
   if DM1.Blocks.Active then DM1.Blocks.Refresh;    //TODO: вынести в DM
 
