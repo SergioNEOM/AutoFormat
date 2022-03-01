@@ -58,6 +58,7 @@ type
     function insertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
     function UpdBlockInDB(blk : TBlock; temp_id : integer = -1):boolean;
     function SaveBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
+    function SaveBlockInfo(bid:integer=-1; binfo:string=''):boolean;
     //-- templates
     function GetCurrentTemplateId : integer;
     function GetCurrentTempName:string;
@@ -451,26 +452,6 @@ begin
 end;
 
 
-{ Templates }
-function TDM1.GetCurrentTemplateId:integer;
-begin
-  Result := -1;
-  // DataSet must be opened!!
-  if not Templates.Active then Exit; //TODO: debug exit code
-  if Templates.IsEmpty then Exit;
-  Result := Templates.FieldByName('id').AsInteger;
-end;
-
-function TDM1.GetCurrentTempName:string;
-begin
-  Result := '';
-  // DataSet must be opened!!
-  if not Templates.Active then Exit; //TODO: debug exit code
-  if Templates.IsEmpty then Exit;
-  Result := Templates.FieldByName('tmpname').AsString;
-end;
-
-
 function TDM1.AddBlk2DB(temp_id: integer; blk: string; blord:integer=0):integer;
 begin
   Result := -1;
@@ -618,6 +599,52 @@ begin
   end;
 end;
 
+function TDM1.SaveBlockInfo(bid:integer=-1; binfo:string=''):boolean;
+begin
+  Result := False;
+  if (bid<=0) then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text := 'UPDATE blocks SET blockinfo=:binfo WHERE id=:bid';
+    ParamByName('bid').AsInteger := bid;
+    ParamByName('binfo').AsString := binfo;
+    try
+      ExecSQL;
+      if Transaction.Active then TSQLTransaction(Transaction).CommitRetaining;
+      Blocks.Refresh;
+      Blocks.Locate('id',bid,[]);
+      Result := True;
+    except
+      // showmessage('error... '); -?
+      if Transaction.Active then TSQLTransaction(Transaction).Rollback;
+    end;
+  finally
+    Close;
+  end;
+end;
+
+//**************
+
+{ Templates }
+
+function TDM1.GetCurrentTemplateId:integer;
+begin
+  Result := -1;
+  // DataSet must be opened!!
+  if not Templates.Active then Exit; //TODO: debug exit code
+  if Templates.IsEmpty then Exit;
+  Result := Templates.FieldByName('id').AsInteger;
+end;
+
+function TDM1.GetCurrentTempName:string;
+begin
+  Result := '';
+  // DataSet must be opened!!
+  if not Templates.Active then Exit; //TODO: debug exit code
+  if Templates.IsEmpty then Exit;
+  Result := Templates.FieldByName('tmpname').AsString;
+end;
 
 
 function TDM1.AddTemplate(prj_id: integer; TempName,FName: string):integer;

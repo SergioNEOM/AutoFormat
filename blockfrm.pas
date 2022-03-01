@@ -6,34 +6,33 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  Buttons, ComCtrls, DBCtrls, EditBtn, DBGrids, contnrs {for TObjectList};
+  db, Buttons, ComCtrls, DBCtrls, EditBtn, DBGrids, contnrs {for TObjectList};
 
 type
+
 
   { TBlocksForm }
 
   TBlocksForm = class(TForm)
-    Button3: TButton;
     CentralPanel: TPanel;
     DBGrid1: TDBGrid;
-    DBText1: TDBText;
-    DBText2: TDBText;
     Label1: TLabel;
-    Label2: TLabel;
-    OkButton: TBitBtn;
-    CancelButton: TBitBtn;
+    CloseButton: TBitBtn;
     BottomPanel: TPanel;
+    Label2: TLabel;
     StaticText1: TStaticText;
+    StaticText2: TStaticText;
     TopPanel: TPanel;
     procedure Button3Click(Sender: TObject);
     procedure CancelButtonClick(Sender: TObject);
     procedure ComboBox1Select(Sender: TObject);
+    procedure DBGrid1DblClick(Sender: TObject);
+    procedure DBText1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure OkButtonClick(Sender: TObject);
+    procedure CloseButtonClick(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
   private
-
   public
     blklist,
     tmplist   :   TObjectList;
@@ -44,6 +43,8 @@ type
     function AddProject : integer;
     function FillTemplates : boolean;
     function FillBlocks : boolean;
+    procedure BlockAfterScrollWrapper(DataSet: TDataSet);
+
   end;
 
 var
@@ -53,7 +54,7 @@ implementation
 
 {$R *.lfm}
 
-uses LCLType, md5,  MainForm, DM, CommonUnit, InputMemoFrm, Processing;
+uses LCLType, md5, MainForm, DM, CommonUnit, InputMemoFrm, Processing;
 
 { TBlocksForm }
 
@@ -79,19 +80,26 @@ begin
     // make sure:  will be no mistakes
     TopPanel.Enabled:=False;
     CentralPanel.Enabled:=False;
-    OkButton.Enabled:=False;
+    CloseButton.Enabled:=False;
   end
   else
   begin
     // Описание проекта
-    // получить шаблоны
-    //FillTemplates;
-    //FillBlocks;
+    StaticText1.Caption:= DM1.GetCurrentProjectInfo;
+    // описание шаблона
+    StaticText2.Caption:= DM1.GetCurrentTempName;
   end;
+  //DM1.Blocks.AfterScroll:= @BlockAfterScrollWrapper;
 end;
 
 
-procedure TBlocksForm.OkButtonClick(Sender: TObject);
+
+procedure TBlocksForm.BlockAfterScrollWrapper(DataSet: TDataSet);
+begin
+  StaticText1.Caption := DataSet.FieldByName('blockinfo').AsString;
+end;
+
+procedure TBlocksForm.CloseButtonClick(Sender: TObject);
 begin
   {
   //if MessageDlg('Подтверждение записи в БД','Информация о проекте будет записана в БД'#13#10'Уверены?',mtConfirmation, mbYesNo,0)=mrYes then
@@ -131,6 +139,24 @@ begin
   // for new template:
   FillBlocks;
   }
+end;
+
+procedure TBlocksForm.DBGrid1DblClick(Sender: TObject);
+var
+  v : string;
+begin
+  if TDBGrid(Sender).SelectedField.FieldName='blockinfo' then
+  begin
+    v := TDBGrid(Sender).SelectedField.AsString;
+    if InputQuery('Изменение информации о блоке','Вводите описание блока:',v) then
+      if not DM1.SaveBlockInfo(TDBGrid(Sender).DataSource.DataSet.FieldByName('id').AsInteger,v) then
+        ShowMessage('Ошибка изменения информации о блоке');
+  end;
+end;
+
+procedure TBlocksForm.DBText1Click(Sender: TObject);
+begin
+
 end;
 
 procedure TBlocksForm.Button3Click(Sender: TObject);
@@ -275,6 +301,7 @@ begin
   end;
   }
 end;
+
 
 
 end.

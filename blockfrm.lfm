@@ -2,138 +2,127 @@ object BlocksForm: TBlocksForm
   Left = 470
   Height = 624
   Top = 214
-  Width = 849
+  Width = 715
   Caption = 'Blocks'
   ClientHeight = 624
-  ClientWidth = 849
+  ClientWidth = 715
   OnCreate = FormCreate
   LCLVersion = '2.2.0.4'
   object TopPanel: TPanel
     Left = 0
-    Height = 136
+    Height = 112
     Top = 0
-    Width = 849
+    Width = 715
     Align = alTop
     BevelInner = bvRaised
-    ClientHeight = 136
-    ClientWidth = 849
+    ClientHeight = 112
+    ClientWidth = 715
     TabOrder = 0
+    object StaticText1: TStaticText
+      Left = 88
+      Height = 20
+      Top = 16
+      Width = 616
+      Anchors = [akTop, akLeft, akRight]
+      Caption = 'StaticText1'
+      Font.Color = clMaroon
+      Font.Height = -13
+      Font.Name = 'Sans'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 0
+    end
     object Label1: TLabel
-      Left = 6
+      Left = 8
       Height = 17
-      Top = 7
-      Width = 90
+      Top = 13
+      Width = 79
       AutoSize = False
       Caption = 'Проект:'
     end
     object Label2: TLabel
-      Left = 11
+      Left = 8
       Height = 17
-      Top = 78
-      Width = 77
+      Top = 64
+      Width = 79
       AutoSize = False
       Caption = 'Шаблон:'
     end
-    object DBText1: TDBText
-      Left = 96
-      Height = 32
-      Top = 8
-      Width = 744
-      AutoSize = False
-      DataField = 'prjinfo'
-      DataSource = DM1.Projects_DS
+    object StaticText2: TStaticText
+      Left = 88
+      Height = 20
+      Top = 67
+      Width = 616
+      Anchors = [akTop, akLeft, akRight]
+      Caption = 'StaticText2'
       Font.Color = clMaroon
-      Font.Height = -16
+      Font.Height = -13
       Font.Name = 'Sans'
       Font.Style = [fsBold]
       ParentFont = False
-    end
-    object DBText2: TDBText
-      Left = 96
-      Height = 40
-      Top = 80
-      Width = 734
-      AutoSize = False
-      DataField = 'tmpname'
-      DataSource = DM1.Temp_DS
+      TabOrder = 1
     end
   end
   object BottomPanel: TPanel
     Left = 0
     Height = 60
     Top = 564
-    Width = 849
+    Width = 715
     Align = alBottom
     BevelInner = bvRaised
     ClientHeight = 60
-    ClientWidth = 849
+    ClientWidth = 715
     TabOrder = 1
-    object OkButton: TBitBtn
-      Left = 710
+    object CloseButton: TBitBtn
+      Left = 584
       Height = 40
       Top = 8
       Width = 120
-      Caption = 'Сохранить'
-      Default = True
-      Kind = bkOK
-      OnClick = OkButtonClick
-      TabOrder = 0
-    end
-    object CancelButton: TBitBtn
-      Left = 520
-      Height = 40
-      Top = 8
-      Width = 120
-      Cancel = True
+      Anchors = [akTop, akRight]
       DefaultCaption = True
-      Kind = bkCancel
-      OnClick = CancelButtonClick
-      TabOrder = 1
+      Kind = bkClose
+      ModalResult = 11
+      OnClick = CloseButtonClick
+      TabOrder = 0
     end
   end
   object CentralPanel: TPanel
     Left = 0
-    Height = 428
-    Top = 136
-    Width = 849
+    Height = 452
+    Top = 112
+    Width = 715
     Align = alClient
     BevelInner = bvLowered
-    ClientHeight = 428
-    ClientWidth = 849
+    ClientHeight = 452
+    ClientWidth = 715
     TabOrder = 2
-    object StaticText1: TStaticText
-      Left = 256
-      Height = 348
-      Top = 8
-      Width = 556
-      Caption = '<-- нет информации -->'
-      TabOrder = 0
-    end
-    object Button3: TButton
-      Left = 424
-      Height = 25
-      Top = 368
-      Width = 88
-      Caption = 'Изменить'
-      OnClick = Button3Click
-      TabOrder = 1
-    end
     object DBGrid1: TDBGrid
-      Left = 11
-      Height = 408
-      Top = 8
-      Width = 229
+      Left = 2
+      Height = 448
+      Top = 2
+      Width = 711
+      Align = alClient
+      Anchors = [akTop, akLeft, akRight]
       AutoEdit = False
       Color = clWindow
       Columns = <      
         item
-          Title.Caption = 'blockname'
+          Title.Alignment = taCenter
+          Title.Caption = 'Блок'
+          Width = 250
           FieldName = 'blockname'
+        end      
+        item
+          Title.Alignment = taCenter
+          Title.Caption = 'Описание'
+          Width = 400
+          FieldName = 'blockinfo'
         end>
       DataSource = DM1.Blocks_DS
       Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgDisableDelete, dgDisableInsert]
       ReadOnly = True
-      TabOrder = 2
+      TabOrder = 0
+      OnDblClick = DBGrid1DblClick
     end
   end
 end
