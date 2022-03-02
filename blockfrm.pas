@@ -14,12 +14,15 @@ type
   { TBlocksForm }
 
   TBlocksForm = class(TForm)
+    BitBtn1: TBitBtn;
     CentralPanel: TPanel;
     DBGrid1: TDBGrid;
+    DBMemo1: TDBMemo;
     Label1: TLabel;
     CloseButton: TBitBtn;
     BottomPanel: TPanel;
     Label2: TLabel;
+    Splitter1: TSplitter;
     StaticText1: TStaticText;
     StaticText2: TStaticText;
     TopPanel: TPanel;
@@ -145,12 +148,39 @@ procedure TBlocksForm.DBGrid1DblClick(Sender: TObject);
 var
   v : string;
 begin
-  if TDBGrid(Sender).SelectedField.FieldName='blockinfo' then
-  begin
-    v := TDBGrid(Sender).SelectedField.AsString;
-    if InputQuery('Изменение информации о блоке','Вводите описание блока:',v) then
-      if not DM1.SaveBlockInfo(TDBGrid(Sender).DataSource.DataSet.FieldByName('id').AsInteger,v) then
-        ShowMessage('Ошибка изменения информации о блоке');
+  case DM1.GetCurrentUserRole of
+    USER_ROLE_ADMIN: Exit;
+    USER_ROLE_CREATOR:
+      begin
+        //if TDBGrid(Sender).SelectedField.FieldName='blockinfo' then
+        //begin
+          v := TDBGrid(Sender).DataSource.DataSet.FieldByName('blockinfo').AsString;
+          if InputQuery('Изменение информации о блоке','Вводите описание блока:',v) then
+            if not DM1.SaveBlockInfo(TDBGrid(Sender).DataSource.DataSet.FieldByName('id').AsInteger,v) then
+              ShowMessage('Ошибка изменения информации о блоке');
+        //end;
+        //TODO: may be that case ?
+        {with InputMemoForm.Create(self) do
+        try
+          if ShowModal=mrOk then
+        finally
+          Free;
+        end;
+        }
+      end;
+    USER_ROLE_DEFAULT:
+      begin
+        with InputMemoForm.Create(self) do
+        try
+          if ShowModal=mrOk then
+          begin
+            if DM1.AddContent2DB(DM1.GetCurrentUserId, DM1.GetCurrentBlockId, InputMemoForm.Memo1.Text, True)>0 then
+              showmessage('content saved');
+          end;
+        finally
+          Free;
+        end;
+      end;
   end;
 end;
 

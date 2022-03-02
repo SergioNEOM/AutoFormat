@@ -51,6 +51,7 @@ type
     //function GetProjectFields:boolean;
     //-- blocks
     procedure BlocksOpen;
+    function GetCurrentBlockId : integer;
     function GetBlocksFromTmp(tmpid:integer): TObjectList;
     procedure FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
     function AddBlock2DB(blk : TBlock):integer;
@@ -65,6 +66,12 @@ type
     function GetTemplatesOfProject(prjid:integer):TObjectList;
     function AddTemplate(prj_id: integer; TempName,FName: string):integer;
     function DelTemplate(tmp_id:integer=-1):boolean;
+    //-- contents
+    //function GetCurrentContentId:integer;
+    function GetContentId(uid, bid : integer):integer;
+    function GetContentText(cid: integer):string;
+    function AddContent2DB(uid, bid : integer; cont:string=''; UpdateIfExist:boolean=False):integer;
+    function UpdContent(cid: integer; cont:string=''):boolean;
   end;
 
 var
@@ -154,7 +161,6 @@ begin
   // DataSet must be opened!!
   if not Users.Active then Exit; //TODO: debug exit code
   if Users.IsEmpty then Exit;
-  Users.First;
   if Users.FieldByName('superuser').AsString='*' then Result := USER_ROLE_ADMIN
   else
     if Users.FieldByName('superuser').AsString='C' then Result := USER_ROLE_CREATOR
@@ -331,7 +337,7 @@ var
   pid : integer;
 begin
   Result := False;
-  if not Projects.Active or (Projects.RecordCount<1) or Projects.EOF or Projects.BOF then Exit;
+  if not Projects.Active or Projects.IsEmpty then Exit;
   pid := DM1.GetCurrentProjectId;
   if pid<=0 then Exit;
   with SQLQuery1 do
@@ -357,6 +363,7 @@ end;
 
 //**************
 
+{ Blocks }
 
 procedure TDM1.BlocksOpen;
 begin
@@ -367,6 +374,14 @@ begin
     SQL.Text:='SELECT * FROM blocks ORDER BY blockorder';
   end;
 }
+end;
+
+function TDM1.GetCurrentBlockId : integer;
+begin
+  Result := -1;
+  if not Blocks.Active then Exit;
+  if Blocks.IsEmpty then Exit;
+  Result := Blocks.FieldByName('id').AsInteger;
 end;
 
 function TDM1.GetBlocksFromTmp(tmpid:integer): TObjectList;
@@ -713,13 +728,109 @@ function TDM1.DelTemplate(tmp_id: integer=-1):boolean;
 begin
   Result := False;
   if tmp_id<=0 then Exit;
+end;
+
+
+//**************
+
+{ Contents }
+
+
+function TDM1.GetContentId(uid, bid : integer):integer;
+begin
+  Result := -1;
   with SQLQuery1 do
   try
     Close;
     Params.Clear;
-    SQL.Text:='DELETE FROM templates WHERE id=:tmp_id;';
-    ParamByName('tmp_id').AsInteger:=tmp_id;
+    SQL.Text:='SELECT id FROM content WHERE user_id=:uid and block_id=:bid;';
+    ParamByName('uid').AsInteger := uid;
+    ParamByName('bid').AsInteger := bid;
     try
+      Open;
+      if RecordCount<1 then Exit;
+      First;
+      Result := FieldByName('id').AsInteger;
+    except
+      //TODO: debug log ...
+    end;
+  finally
+    Close;
+  end;
+end;
+
+function TDM1.GetContentText(cid: integer):string;
+begin
+  Result := '';
+  with SQLQuery1 do
+  try
+    Close;
+    Params.Clear;
+    SQL.Text:='SELECT conttext FROM content WHERE id=:cid;';
+    ParamByName('cid').AsInteger := cid;
+    try
+      Open;
+      if RecordCount<1 then Exit;
+      First;
+      Result := FieldByName('conttext').AsString;
+    except
+      //TODO: debug log ...
+    end;
+  finally
+    Close;
+  end;
+end;
+
+function TDM1.AddContent2DB(uid, bid : integer; cont:string=''; UpdateIfExist:boolean=False):integer;
+begin
+  //TODO:
+  //1. seek in content record with user_id=:uid and block_id=:bid
+  // if found - SQLQuery1.SQL.Text = 'UPDATE content ...
+  // else SQLQuery1.SQL.Text = 'INSERT INTO content...
+  Result := -1;
+  if (uid<=0) or (bid<=0) then Exit;
+  Result := GetContentId(uid,bid);
+  if Result>0 then
+  begin
+    if UpdateIfExist then
+      if UpdContent(Result,cont) then Exit; // OK
+    Result := -1; // can't update - error
+    Exit;
+  end;
+  with SQLQuery1 do
+  try
+    Close;
+    Params.Clear;
+    SQL.Text:='INSERT INTO content (user_id,block_id, conttext) VALUES (:uid,:bid,:cont);';
+    ParamByName('uid').AsInteger := uid;
+    ParamByName('bid').AsInteger := bid;
+    ParamByName('cont').AsString := cont;
+    try
+      if not SQLTransaction.Active then SQLTransaction.StartTransaction;
+      ExecSQL;
+      if SQLTransaction.Active then SQLTransaction.CommitRetaining;
+      Result := GetLastRowId;
+    except
+      if SQLTransaction.Active then SQLTransaction.RollbackRetaining;
+      Result := -1;
+    end;
+  finally
+    Close;
+  end;
+end;
+
+function TDM1.UpdContent(cid: integer; cont:string=''):boolean;
+begin
+  Result := False;
+  if cid<=0 then Exit;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Text:='UPDATE content SET conttext=:cont WHERE id=:cid;';
+    ParamByName('cid').AsInteger := cid;
+    ParamByName('cont').AsString := cont;
+    try
+      if not SQLTransaction.Active then SQLTransaction.StartTransaction;
       ExecSQL;
       if SQLTransaction.Active then SQLTransaction.CommitRetaining;
       Result := True;
@@ -732,8 +843,7 @@ begin
   end;
 end;
 
-
-
+//********
 
 {
 aMStr:TMemoryStream;

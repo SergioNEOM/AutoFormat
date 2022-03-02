@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, mainform, DM, LoginFrm, ListFrm, GetFileFrm, Blockfrm, CommonUnit,
-  InputMemoFrm, Processing;
+  InputMemoFrm;
 
 {$R *.res}
 

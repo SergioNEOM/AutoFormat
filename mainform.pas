@@ -417,8 +417,12 @@ begin
     Free;
   end;
   //TODO: есть сомнения, правильно ли отрабатывает в случае отказа от выбора
-  self.Caption:= AppHeader + ' : ' + DM1.GetCurrentUserName;
-  if DM1.GetCurrentUserRole=USER_ROLE_ADMIN then  self.Caption:= self.Caption + ' (***)';
+  //self.Caption:= AppHeader + ' : ' + DM1.GetCurrentUserName;
+  StatusBar1.Panels[0].Text := DM1.GetCurrentUserName;
+  case DM1.GetCurrentUserRole of
+    USER_ROLE_ADMIN   : StatusBar1.Panels[0].Text := StatusBar1.Panels[0].Text + '(*)';
+    USER_ROLE_CREATOR : StatusBar1.Panels[0].Text := StatusBar1.Panels[0].Text + '(Creator)';
+  end;
   self.SetFocus;
   self.BringToFront;
   DM1.Projects.Open;
