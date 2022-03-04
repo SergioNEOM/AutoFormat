@@ -14,10 +14,14 @@ type
   { TMainForm1 }
 
   TMainForm1 = class(TForm)
-    DelUserAction: TAction;
-    AddUserAction: TAction;
+    FillDocAction: TAction;
+    UserManagerAction: TAction;
     EditTmpAction: TAction;
     DelTmpAction: TAction;
+    MenuItem13: TMenuItem;
+    MenuItem14: TMenuItem;
+    MenuItem15: TMenuItem;
+    MenuItem16: TMenuItem;
     PrjDBGrid: TDBGrid;
     ProgressBar1: TProgressBar;
     TempDBGrid: TDBGrid;
@@ -25,14 +29,10 @@ type
     FormatAction: TAction;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
-    MenuItem10: TMenuItem;
-    MenuItem11: TMenuItem;
     MenuItem12: TMenuItem;
     OpenDialog1: TOpenDialog;
-    Separator4: TMenuItem;
     Separator3: TMenuItem;
     Separator2: TMenuItem;
-    Separator1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
@@ -70,6 +70,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure NewPrjActionExecute(Sender: TObject);
     procedure NewTmpActionExecute(Sender: TObject);
+    procedure UserManagerActionExecute(Sender: TObject);
   private
     AppStarted : boolean;
     function GetConfigFile : boolean;
@@ -140,7 +141,7 @@ begin
     TAction(ActionList1.Actions[i]).Enabled:=False;
     {
     AddUserAction.Enabled:=False;
-    DelUserAction.Enabled:=False;
+    UserManagerAction.Enabled:=False;
     NewPrjAction.Enabled := False;
     DelPrjAction.Enabled:=False;
     NewTmpAction.Enabled:=False;
@@ -150,16 +151,17 @@ begin
     }
   end;
   //
+  StatusBar1.Panels[0].Text := DM1.GetCurrentUserName;
+  // always enabled actions:
   ChangeUserAction.Enabled := True;
   ExitAppAction.Enabled := True;
   //--
   if DM1.GetCurrentUserId<=0 then Exit;
-  ur := DM1.GetCurrentUserRole;
-  case ur of
+  case DM1.GetCurrentUserRole of
     USER_ROLE_ADMIN:
       begin
-        AddUserAction.Enabled:=True;
-        DelUserAction.Enabled:=True;
+        UserManagerAction.Enabled:=True;
+        StatusBar1.Panels[0].Text := StatusBar1.Panels[0].Text + '(*)';
       end;
     USER_ROLE_CREATOR:
       begin
@@ -168,10 +170,12 @@ begin
         NewTmpAction.Enabled := True;
         EditTmpAction.Enabled := True;
         DelTmpAction.Enabled := True;
-        FormatAction.Enabled := True;
+        //--
+        StatusBar1.Panels[0].Text := StatusBar1.Panels[0].Text + '(Creator)';
       end;
-    else
+    USER_ROLE_DEFAULT:
       begin
+        FillDocAction.Enabled:=True;
         FormatAction.Enabled:=True;
       end;
   end;
@@ -400,6 +404,16 @@ begin
  }
 end;
 
+procedure TMainForm1.UserManagerActionExecute(Sender: TObject);
+begin
+  with TListForm1.Create(self) do
+  try
+    ShowModal;
+  finally
+    Free;
+  end;
+end;
+
 
 procedure TMainForm1.ShowLogin;
 var
@@ -418,13 +432,11 @@ begin
   end;
   //TODO: есть сомнения, правильно ли отрабатывает в случае отказа от выбора
   //self.Caption:= AppHeader + ' : ' + DM1.GetCurrentUserName;
-  StatusBar1.Panels[0].Text := DM1.GetCurrentUserName;
-  case DM1.GetCurrentUserRole of
-    USER_ROLE_ADMIN   : StatusBar1.Panels[0].Text := StatusBar1.Panels[0].Text + '(*)';
-    USER_ROLE_CREATOR : StatusBar1.Panels[0].Text := StatusBar1.Panels[0].Text + '(Creator)';
-  end;
+  SetAccessibility;
+  //
   self.SetFocus;
   self.BringToFront;
+  //TODO: move into DM within try/except
   DM1.Projects.Open;
   DM1.Templates.Open;
   DM1.Blocks.Open;

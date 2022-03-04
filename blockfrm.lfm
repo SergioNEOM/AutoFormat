@@ -7,6 +7,7 @@ object BlocksForm: TBlocksForm
   ClientHeight = 494
   ClientWidth = 711
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   LCLVersion = '2.2.0.4'
   object TopPanel: TPanel
     Left = 0
@@ -120,7 +121,7 @@ object BlocksForm: TBlocksForm
     end
     object DBMemo1: TDBMemo
       Left = 264
-      Height = 264
+      Height = 272
       Top = 8
       Width = 436
       Color = clBtnFace

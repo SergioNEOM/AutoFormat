@@ -13,10 +13,9 @@ resourcestring
 
 type
 
-  { TListForm1 }
+  { TUserListForm }
 
-  TListForm1 = class(TForm)
-    CancelButton: TBitBtn;
+  TUserListForm = class(TForm)
     DBGrid1: TDBGrid;
     OkButton: TBitBtn;
     Panel1: TPanel;
@@ -24,17 +23,17 @@ type
 
   public
     Current_id : integer;
-    constructor Create(TheOwner: TComponent; DS: TDataSource; ListName:string = ''; id: integer = -1);
+    //constructor Create(TheOwner: TComponent; DS: TDataSource; ListName:string = ''; id: integer = -1);
   end;
 
 var
-  ListForm1: TListForm1;
+  UserListForm: TUserListForm;
 
 implementation
 
 {$R *.lfm}
 
-constructor TListForm1.Create(TheOwner: TComponent; DS: TDataSource; ListName:string = ''; id: integer = -1);
+{constructor TUserListForm.Create(TheOwner: TComponent; DS: TDataSource; ListName:string = ''; id: integer = -1);
 begin
   inherited Create(TheOwner);
   self.Caption:=FormHeader + Trim(ListName);
@@ -53,6 +52,6 @@ begin
     Current_id:=DS.DataSet.FieldByName('id').AsInteger;
   end;
 end;
-
+}
 end.
 

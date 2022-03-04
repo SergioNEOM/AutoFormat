@@ -195,7 +195,7 @@ object MainForm1: TMainForm1
       OnExecute = NewPrjActionExecute
     end
     object NewTmpAction: TAction
-      Category = 'document'
+      Category = 'template'
       Caption = 'NewTmpjAction'
       Hint = 'Добавить в проект новый файл шаблона'
       ImageIndex = 1
@@ -215,24 +215,25 @@ object MainForm1: TMainForm1
       OnExecute = DelPrjActionExecute
     end
     object DelTmpAction: TAction
-      Category = 'document'
+      Category = 'template'
       Caption = 'DelTmpAction'
       Hint = 'Удалить шаблон из проекта'
       OnExecute = DelTmpActionExecute
     end
     object EditTmpAction: TAction
-      Category = 'document'
+      Category = 'template'
       Caption = 'EditTmpAction'
       Hint = 'Открыть шаблон'
       OnExecute = EditTmpActionExecute
     end
-    object AddUserAction: TAction
+    object UserManagerAction: TAction
       Category = 'app'
-      Caption = 'AddUserAction'
+      Caption = 'Менеджер пользователей'
+      OnExecute = UserManagerActionExecute
     end
-    object DelUserAction: TAction
-      Category = 'app'
-      Caption = 'DelUserAction'
+    object FillDocAction: TAction
+      Category = 'document'
+      Caption = 'FillDocAction'
     end
   end
   object ActionImages: TImageList
@@ -333,14 +334,8 @@ object MainForm1: TMainForm1
       object Separator3: TMenuItem
         Caption = '-'
       end
-      object MenuItem11: TMenuItem
-        Action = AddUserAction
-      end
-      object Separator4: TMenuItem
-        Caption = '-'
-      end
       object MenuItem12: TMenuItem
-        Action = DelUserAction
+        Action = UserManagerAction
       end
       object N2: TMenuItem
         Caption = '-'
@@ -361,18 +356,24 @@ object MainForm1: TMainForm1
         Action = DelPrjAction
       end
     end
+    object MenuItem13: TMenuItem
+      Caption = 'Шаблон'
+      object MenuItem14: TMenuItem
+        Action = NewTmpAction
+      end
+      object MenuItem15: TMenuItem
+        Action = EditTmpAction
+      end
+      object MenuItem16: TMenuItem
+        Action = DelTmpAction
+      end
+    end
     object MenuItem6: TMenuItem
       Caption = 'Документ'
       object MenuItem3: TMenuItem
-        Action = NewTmpAction
+        Action = FillDocAction
       end
       object Separator2: TMenuItem
-        Caption = '-'
-      end
-      object MenuItem10: TMenuItem
-        Action = DelTmpAction
-      end
-      object Separator1: TMenuItem
         Caption = '-'
       end
       object MenuItem7: TMenuItem

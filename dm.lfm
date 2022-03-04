@@ -151,4 +151,26 @@ object DM1: TDM1
     Left = 314
     Top = 141
   end
+  object Content: TSQLQuery
+    FieldDefs = <>
+    Database = SQLite3Connection1
+    Transaction = SQLTransactionMain
+    SQL.Strings = (
+      'SELECT * FROM blocks WHERE tmp_id=:id;'
+    )
+    Params = <    
+      item
+        DataType = ftUnknown
+        Name = 'id'
+        ParamType = ptInput
+      end>
+    Macros = <>
+    Left = 624
+    Top = 83
+  end
+  object Content_DS: TDataSource
+    DataSet = Content
+    Left = 624
+    Top = 141
+  end
 end

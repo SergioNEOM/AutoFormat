@@ -1,4 +1,4 @@
-object ListForm1: TListForm1
+object UserListForm: TUserListForm
   Left = 354
   Height = 456
   Top = 158
@@ -6,7 +6,7 @@ object ListForm1: TListForm1
   Caption = 'Справочник'
   ClientHeight = 456
   ClientWidth = 629
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.2.0.4'
   object Panel1: TPanel
     Left = 0
     Height = 50
@@ -17,37 +17,24 @@ object ListForm1: TListForm1
     ClientHeight = 50
     ClientWidth = 629
     TabOrder = 0
-    object CancelButton: TBitBtn
-      Left = 336
-      Height = 40
-      Top = 4
-      Width = 120
-      Anchors = [akTop, akRight]
-      Cancel = True
-      DefaultCaption = True
-      Kind = bkCancel
-      ModalResult = 2
-      TabOrder = 0
-    end
     object OkButton: TBitBtn
       Left = 496
       Height = 40
       Top = 4
       Width = 120
       Anchors = [akTop, akRight]
-      Default = True
       DefaultCaption = True
-      Kind = bkOK
-      ModalResult = 1
-      TabOrder = 1
+      Kind = bkClose
+      ModalResult = 11
+      TabOrder = 0
     end
   end
   object DBGrid1: TDBGrid
-    Left = 0
-    Height = 406
-    Top = 0
-    Width = 629
-    Align = alClient
+    Left = 64
+    Height = 286
+    Top = 80
+    Width = 472
+    Align = alCustom
     Color = clWindow
     Columns = <>
     Options = [dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgDisableDelete, dgDisableInsert, dgDisplayMemoText]

@@ -65,7 +65,7 @@
       <Unit4>
         <Filename Value="listfrm.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="ListForm1"/>
+        <ComponentName Value="UserListForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ListFrm"/>

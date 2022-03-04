@@ -17,7 +17,9 @@ type
 
   TDM1 = class(TDataModule)
     Blocks: TSQLQuery;
+    Content: TSQLQuery;
     Blocks_DS: TDataSource;
+    Content_DS: TDataSource;
     Users: TSQLQuery;
     Projects_DS: TDataSource;
     DataSource1: TDataSource;
@@ -66,8 +68,10 @@ type
     function GetTemplatesOfProject(prjid:integer):TObjectList;
     function AddTemplate(prj_id: integer; TempName,FName: string):integer;
     function DelTemplate(tmp_id:integer=-1):boolean;
-    //-- contents
+    //-- content
     //function GetCurrentContentId:integer;
+    procedure OpenContent(uid, bid : integer);
+    procedure CloseContent;
     function GetContentId(uid, bid : integer):integer;
     function GetContentText(cid: integer):string;
     function AddContent2DB(uid, bid : integer; cont:string=''; UpdateIfExist:boolean=False):integer;
@@ -733,8 +737,34 @@ end;
 
 //**************
 
-{ Contents }
+{ Content }
 
+procedure TDM1.OpenContent(uid, bid : integer);
+begin
+  if (uid<=0) or (bid<=0) then Exit;
+  with Content do
+  begin
+    Close;
+    Params.Clear;
+    SQL.Text:='SELECT id,conttext FROM content WHERE user_id=:uid AND block_id=:bid;';
+    ParamByName('uid').AsInteger:=uid;
+    ParamByName('bid').AsInteger:=bid;
+    try
+      Open;
+    except
+      //TODO: debug log write error
+    end;
+  end;
+end;
+
+procedure TDM1.CloseContent;
+begin
+  try
+    Content.Close;
+  except
+    //TODO: debug log write error
+  end;
+end;
 
 function TDM1.GetContentId(uid, bid : integer):integer;
 begin

@@ -12,9 +12,10 @@ resourcestring
   MyChars   = 'SVS';
 
 const
+     USER_ROLE_NONE    = 0;
      USER_ROLE_DEFAULT = 1;
      USER_ROLE_CREATOR = 99;
-     USER_ROLE_ADMIN = 999;
+     USER_ROLE_ADMIN   = 999;
      //
      TASK_TEST       = 0;
      TASK_WORD_SCAN  = 1;
@@ -84,7 +85,7 @@ implementation
 
 uses
   {$IFDEF WINDOWS} ComObj, {$ENDIF}
-  StrUtils,  LCLType, md5, Dialogs, MainForm, DM, LoginFrm, ListFrm, GetFileFrm;
+  LCLType, md5, Dialogs;
 
 
 function HashPass(pass: string): string;

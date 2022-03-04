@@ -33,6 +33,7 @@ type
     procedure DBText1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CloseButtonClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure SpeedButton1Click(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
   private
@@ -92,9 +93,26 @@ begin
     // описание шаблона
     StaticText2.Caption:= DM1.GetCurrentTempName;
   end;
-  //DM1.Blocks.AfterScroll:= @BlockAfterScrollWrapper;
+  case DM1.GetCurrentUserRole of
+    USER_ROLE_ADMIN : Exit;
+    USER_ROLE_CREATOR :
+      begin
+        DBMemo1.DataSource := DM1.Blocks_DS;
+        DBMemo1.DataField  := 'blockinfo';
+      end;
+    USER_ROLE_DEFAULT :
+      begin
+        DM1.OpenContent(DM1.GetCurrentUserId, DM1.GetCurrentBlockId);
+        DBMemo1.DataSource := DM1.Content_DS;
+        DBMemo1.DataField  := 'conttext';
+      end;
+  end;
 end;
 
+procedure TBlocksForm.FormDestroy(Sender: TObject);
+begin
+  DM1.CloseContent;
+end;
 
 
 procedure TBlocksForm.BlockAfterScrollWrapper(DataSet: TDataSet);
@@ -120,6 +138,7 @@ begin
   }
   ModalResult:=mrOK;
 end;
+
 
 procedure TBlocksForm.ComboBox1Select(Sender: TObject);
 var
