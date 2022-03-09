@@ -3,9 +3,10 @@ object UserListForm: TUserListForm
   Height = 456
   Top = 158
   Width = 629
-  Caption = 'Справочник'
+  Caption = 'Список пользователей'
   ClientHeight = 456
   ClientWidth = 629
+  OnCreate = FormCreate
   LCLVersion = '2.2.0.4'
   object Panel1: TPanel
     Left = 0
@@ -28,15 +29,44 @@ object UserListForm: TUserListForm
       ModalResult = 11
       TabOrder = 0
     end
+    object AddBitBtn: TBitBtn
+      Left = 16
+      Height = 40
+      Top = 4
+      Width = 120
+      Caption = 'Добавить'
+      OnClick = AddBitBtnClick
+      TabOrder = 1
+    end
+    object EditBitBtn: TBitBtn
+      Left = 142
+      Height = 40
+      Top = 4
+      Width = 120
+      Caption = 'Изменить'
+      OnClick = EditBitBtnClick
+      TabOrder = 2
+    end
+    object DelBitBtn: TBitBtn
+      Left = 274
+      Height = 40
+      Top = 4
+      Width = 120
+      Caption = 'Удалить'
+      OnClick = DelBitBtnClick
+      TabOrder = 3
+    end
   end
   object DBGrid1: TDBGrid
-    Left = 64
-    Height = 286
-    Top = 80
-    Width = 472
-    Align = alCustom
+    Left = 0
+    Height = 406
+    Top = 0
+    Width = 629
+    Align = alClient
+    AutoEdit = False
     Color = clWindow
     Columns = <>
+    DataSource = DM1.Users_DS
     Options = [dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgDisableDelete, dgDisableInsert, dgDisplayMemoText]
     ReadOnly = True
     TabOrder = 1

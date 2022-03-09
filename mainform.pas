@@ -406,7 +406,7 @@ end;
 
 procedure TMainForm1.UserManagerActionExecute(Sender: TObject);
 begin
-  with TListForm1.Create(self) do
+  with TUserListForm.Create(self) do
   try
     ShowModal;
   finally
@@ -420,7 +420,7 @@ var
   prevUser : Integer;
 begin
   prevUser:= DM1.GetCurrentUserId;
-  with TLoginForm.Create(self) do
+  with TLoginForm.Create(self, FORM_MODE_LOGIN) do
   try
     if ShowModal <> mrOK then
     begin

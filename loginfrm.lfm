@@ -1,56 +1,151 @@
 object LoginForm: TLoginForm
   Left = 362
-  Height = 206
+  Height = 460
   Top = 164
-  Width = 314
+  Width = 340
   Caption = 'LoginForm'
-  ClientHeight = 206
-  ClientWidth = 314
+  ClientHeight = 460
+  ClientWidth = 340
+  Constraints.MinHeight = 190
+  Constraints.MinWidth = 340
+  OnCreate = FormCreate
   LCLVersion = '2.2.0.4'
-  object PassField: TLabeledEdit
-    Left = 32
-    Height = 33
-    Top = 112
-    Width = 256
-    EchoMode = emPassword
-    EditLabel.Height = 17
-    EditLabel.Width = 256
-    EditLabel.Caption = 'User password'
-    PasswordChar = '*'
-    TabOrder = 1
-  end
-  object LoginField: TLabeledEdit
-    Left = 32
-    Height = 33
-    Top = 40
-    Width = 256
-    EditLabel.Height = 17
-    EditLabel.Width = 256
-    EditLabel.Caption = 'User login'
-    TabOrder = 0
-  end
-  object BitBtn1: TBitBtn
-    Left = 8
-    Height = 30
-    Top = 168
-    Width = 120
-    Anchors = [akLeft, akBottom]
-    Cancel = True
-    DefaultCaption = True
-    Kind = bkCancel
-    ModalResult = 2
-    TabOrder = 2
-  end
-  object BitBtn2: TBitBtn
-    Left = 184
-    Height = 30
-    Top = 168
-    Width = 120
-    Anchors = [akRight, akBottom]
-    Default = True
-    DefaultCaption = True
-    Kind = bkOK
-    OnClick = BitBtn2Click
+  object Panel1: TPanel
+    Left = 0
+    Height = 50
+    Top = 410
+    Width = 340
+    Align = alBottom
+    BevelInner = bvRaised
+    ClientHeight = 50
+    ClientWidth = 340
     TabOrder = 3
+    object BitBtn2: TBitBtn
+      Left = 200
+      Height = 40
+      Top = 4
+      Width = 120
+      Anchors = [akRight, akBottom]
+      Default = True
+      DefaultCaption = True
+      Kind = bkOK
+      OnClick = BitBtn2Click
+      TabOrder = 0
+    end
+    object BitBtn1: TBitBtn
+      Left = 64
+      Height = 40
+      Top = 4
+      Width = 120
+      Anchors = [akRight, akBottom]
+      Cancel = True
+      DefaultCaption = True
+      Kind = bkCancel
+      ModalResult = 2
+      TabOrder = 1
+    end
+  end
+  object LoginPanel: TPanel
+    Left = 0
+    Height = 140
+    Top = 72
+    Width = 340
+    Align = alTop
+    ClientHeight = 140
+    ClientWidth = 340
+    TabOrder = 1
+    object PassField: TLabeledEdit
+      Left = 32
+      Height = 33
+      Top = 97
+      Width = 288
+      Anchors = [akTop, akLeft, akRight]
+      EchoMode = emPassword
+      EditLabel.Height = 17
+      EditLabel.Width = 288
+      EditLabel.Caption = 'Пароль:'
+      PasswordChar = '*'
+      TabOrder = 1
+    end
+    object LoginField: TLabeledEdit
+      Left = 32
+      Height = 33
+      Top = 29
+      Width = 288
+      Anchors = [akTop, akLeft, akRight]
+      EditLabel.Height = 17
+      EditLabel.Width = 288
+      EditLabel.Caption = 'Login:'
+      TabOrder = 0
+    end
+  end
+  object UserNamePanel: TPanel
+    Left = 0
+    Height = 72
+    Top = 0
+    Width = 340
+    Align = alTop
+    ClientHeight = 72
+    ClientWidth = 340
+    TabOrder = 0
+    object UserNameField: TLabeledEdit
+      Left = 32
+      Height = 33
+      Top = 28
+      Width = 288
+      Anchors = [akTop, akLeft, akRight]
+      EditLabel.Height = 17
+      EditLabel.Width = 288
+      EditLabel.Caption = 'Имя пользователя:'
+      TabOrder = 0
+    end
+  end
+  object RepeatPanel: TPanel
+    Left = 0
+    Height = 194
+    Top = 212
+    Width = 340
+    Align = alTop
+    ClientHeight = 194
+    ClientWidth = 340
+    TabOrder = 2
+    object PassField2: TLabeledEdit
+      Left = 32
+      Height = 33
+      Top = 24
+      Width = 288
+      Anchors = [akTop, akLeft, akRight]
+      EchoMode = emPassword
+      EditLabel.Height = 17
+      EditLabel.Width = 288
+      EditLabel.Caption = 'Пароль повторно:'
+      PasswordChar = '*'
+      TabOrder = 0
+    end
+    object RadioGroup1: TRadioGroup
+      Left = 32
+      Height = 105
+      Top = 75
+      Width = 288
+      Anchors = [akTop, akLeft, akRight]
+      AutoFill = True
+      Caption = 'Роль пользователя: '
+      ChildSizing.LeftRightSpacing = 6
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.EnlargeVertical = crsHomogenousChildResize
+      ChildSizing.ShrinkHorizontal = crsScaleChilds
+      ChildSizing.ShrinkVertical = crsScaleChilds
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 87
+      ClientWidth = 286
+      ItemIndex = 0
+      Items.Strings = (
+        'По умолчанию'
+        'Создатель шаблонов'
+        'Менеджер пользователей'
+      )
+      TabOrder = 1
+    end
   end
 end

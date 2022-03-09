@@ -5,8 +5,7 @@ unit DM;
 interface
 
 uses
-  Classes, SysUtils, sqlite3conn, sqldb, db, contnrs {for TObjectList},
-  CommonUnit;
+  Classes, SysUtils, sqlite3conn, sqldb, db, contnrs {for TObjectList} ;
 
 const
   SQL_BLOCKS = 'SELECT * FROM blocks WHERE tmp_id=:tmpid;';
@@ -20,10 +19,11 @@ type
     Content: TSQLQuery;
     Blocks_DS: TDataSource;
     Content_DS: TDataSource;
-    Users: TSQLQuery;
+    CurrentUser: TSQLQuery;
     Projects_DS: TDataSource;
     DataSource1: TDataSource;
-    Users_DS: TDataSource;
+    Users: TSQLQuery;
+    CU_DS: TDataSource;
     Temp_DS: TDataSource;
     SQLite3Connection1: TSQLite3Connection;
     SQLQuery1: TSQLQuery;
@@ -32,17 +32,19 @@ type
     SQLScript1: TSQLScript;
     TranScript: TSQLTransaction;
     SQLTransactionMain: TSQLTransaction;
+    Users_DS: TDataSource;
   private
 
   public
     function DBConnect : boolean;
     function GetLastRowId : integer;
-    //-- users
+    //-- CurrentUser
     function CheckUser(login,password:string) : integer; // res > 0 - OK;  -1 - wrong login/password; -999 - DB not connected
     function GetCurrentUserId:integer;
     function GetCurrentUserRole:integer;
     function GetCurrentUserName:string;
-    function AddUser(login, pass, username : string; admin : boolean=False):integer;
+    function AddUser(login, pass, username: string; admin: string=''):integer;
+    function UpdUser(uid: integer; login, pass, username: string; admin: string=''):boolean;
     function DelUser(user_id:integer=-1):boolean;
     //-- projects
     function AddProject(Info: string='') : integer;
@@ -56,10 +58,10 @@ type
     function GetCurrentBlockId : integer;
     function GetBlocksFromTmp(tmpid:integer): TObjectList;
     procedure FillBlockNames(var OutBlocks : TStrings;temp_id : integer = -1);
-    function AddBlock2DB(blk : TBlock):integer;
+   // function AddBlock2DB(blk : TBlock):integer;
     function AddBlk2DB(temp_id: integer; blk: string; blord:integer=0):integer;
     function insertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
-    function UpdBlockInDB(blk : TBlock; temp_id : integer = -1):boolean;
+  // function UpdBlockInDB(blk : TBlock; temp_id : integer = -1):boolean;
     function SaveBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
     function SaveBlockInfo(bid:integer=-1; binfo:string=''):boolean;
     //-- templates
@@ -85,7 +87,7 @@ implementation
 
 {$R *.lfm}
 
-uses MainForm,  StrUtils ;
+uses MainForm,  StrUtils, CommonUnit ;
 
 
 function TDM1.DBConnect : boolean;
@@ -121,16 +123,17 @@ begin
   end;
 end;
 
-{Users}
+{CurrentUser}
 function TDM1.CheckUser(login,password:string): integer;
 begin
   Result := -1;
+  password  := HashPass(password);
   if not SQLite3Connection1.Connected then
   begin
     Result := -999;
     Exit;
   end;
-  with Users do
+  with CurrentUser do
   begin
     Close;
     sql.Text:='SELECT id,username,superuser,password FROM users WHERE login=:lo';
@@ -138,7 +141,7 @@ begin
     try
       Open;
       if IsEmpty then raise Exception.Create('user not found');
-      if FieldByName('password').AsString <> password then raise Exception.Create('wrong password');
+      if FieldByName('password').AsString <> password then raise Exception.Create('wrong password'); //TODO: debug log
       Result := FieldByName('id').AsInteger;
       // OK
     except
@@ -153,21 +156,21 @@ function TDM1.GetCurrentUserId:integer;
 begin
   Result := -1;
   // DataSet must be opened!!
-  if not Users.Active then Exit; //TODO: debug exit code
-  if Users.IsEmpty then Exit;
-  Users.First;
-  Result := Users.FieldByName('id').AsInteger;
+  if not CurrentUser.Active then Exit; //TODO: debug exit code
+  if CurrentUser.IsEmpty then Exit;
+  CurrentUser.First;
+  Result := CurrentUser.FieldByName('id').AsInteger;
 end;
 
 function TDM1.GetCurrentUserRole:integer;
 begin
   Result := -1;
   // DataSet must be opened!!
-  if not Users.Active then Exit; //TODO: debug exit code
-  if Users.IsEmpty then Exit;
-  if Users.FieldByName('superuser').AsString='*' then Result := USER_ROLE_ADMIN
+  if not CurrentUser.Active then Exit; //TODO: debug exit code
+  if CurrentUser.IsEmpty then Exit;
+  if CurrentUser.FieldByName('superuser').AsString='*' then Result := USER_ROLE_ADMIN
   else
-    if Users.FieldByName('superuser').AsString='C' then Result := USER_ROLE_CREATOR
+    if CurrentUser.FieldByName('superuser').AsString='C' then Result := USER_ROLE_CREATOR
     else Result := USER_ROLE_DEFAULT;
 end;
 
@@ -175,13 +178,13 @@ function TDM1.GetCurrentUserName:string;
 begin
   Result := '';
   // DataSet must be opened!!
-  if not Users.Active then Exit; //TODO: debug exit code
-  if Users.IsEmpty then Exit;
-  Users.First;      // должна быть только одна запись с таким набором login/pass
-  Result := Users.FieldByName('username').AsString;
+  if not CurrentUser.Active then Exit; //TODO: debug exit code
+  if CurrentUser.IsEmpty then Exit;
+  CurrentUser.First;      // должна быть только одна запись с таким набором login/pass
+  Result := CurrentUser.FieldByName('username').AsString;
 end;
 
-function TDM1.AddUser(login, pass, username : string; admin : boolean=False):integer;
+function TDM1.AddUser(login, pass, username: string; admin: string=''):integer;
 begin
   Result := -1;
   if IsEmptyStr(login, [' ',#9,#10,#13]) then Exit;   //TODO: debug log -> login is empty
@@ -194,14 +197,13 @@ begin
     SQLQuery1.ParamByName('uname').AsString:=username;
     SQLQuery1.ParamByName('ulogin').AsString:=login;
     SQLQuery1.ParamByName('upass').AsString:=HashPass(pass);
-    if admin then SQLQuery1.ParamByName('super').AsString:='*'
-    else SQLQuery1.ParamByName('super').AsString:='' ;
+    SQLQuery1.ParamByName('super').AsString:=admin;
     try
       ExecSQL;
       if SQLTransaction.Active then SQLTransaction.CommitRetaining;
       Result := GetLastRowId;
       if Result>0 then
-        if not Users.Locate('id',Result,[]) then Users.First;  // if not located new record, go to first
+        if not CurrentUser.Locate('id',Result,[]) then CurrentUser.First;  // if not located new record, go to first
     finally
       Close;
     end;
@@ -209,13 +211,45 @@ begin
 end;
 
 
+function TDM1.UpdUser(uid: integer; login, pass, username: string; admin: string=''):boolean;
+begin
+  Result := False;
+  if uid<=0 then Exit;
+  if IsEmptyStr(login, [' ',#9,#10,#13]) then Exit;   //TODO: debug log -> login is empty
+  //if IsEmptyStr(pass, [' ',#9,#10,#13]) then Exit;   //TODO: pass may be empty ???   debug log -> pass is empty
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Clear;
+    SQL.Text := 'UPDATE users SET username=:uname, login=:ulogin, password=:upass, superuser=:super WHERE id=:uid;';
+    SQLQuery1.ParamByName('id').AsInteger:=uid;
+    SQLQuery1.ParamByName('uname').AsString:=username;
+    SQLQuery1.ParamByName('ulogin').AsString:=login;
+    SQLQuery1.ParamByName('upass').AsString:=HashPass(pass);
+    SQLQuery1.ParamByName('super').AsString:=admin;
+    try
+      ExecSQL;
+      if SQLTransaction.Active then SQLTransaction.CommitRetaining;
+      Result := True;
+    except
+      if SQLTransaction.Active then SQLTransaction.RollbackRetaining;
+      Result := False;
+      //TODO: debug log
+    end;
+  finally
+    Close;
+  end;
+end;
+
 function TDM1.DelUser(user_id:integer=-1):boolean;
 begin
-  // Удалять может только админ (SuperUser)
-  // Себя удалять нельзя!!!
+  //TODO: удалять единственного админа НЕЛЬЗЯ !!
+  //TODO: проверки о наличии связных записей провести перед вызовом функции!!!
   Result := False;
   if user_id <=0 then Exit;   //TODO: debug log -> no user to delete
-  if GetCurrentUserRole <> USER_ROLE_ADMIN then Exit; //TODO: debug log -> only admin can delete users
+  // Удалять может только админ
+  if GetCurrentUserRole <> USER_ROLE_ADMIN then Exit; //TODO: debug log -> only admin can delete CurrentUser
+  // Себя удалять нельзя!!!
   if user_id = GetCurrentUserId then Exit ; //TODO: debug log -> user can't delete yourself
   //
   with SQLQuery1 do
@@ -275,7 +309,7 @@ end;
 
 function TDM1.GetCurrentProjectId:integer;
 begin
-  //TODO: объединить в одну функцию со вторым параметром - TDataSet (users, projects, templates)
+  //TODO: объединить в одну функцию со вторым параметром - TDataSet (CurrentUser, projects, templates)
   Result := -1;
   // DataSet must be opened!!
   if not Projects.Active then Exit; //TODO: debug exit code
@@ -498,7 +532,7 @@ begin
   end;
 end;
 
-function TDM1.AddBlock2DB(blk : TBlock):integer;
+{function TDM1.AddBlock2DB(blk : TBlock):integer;
 var
   temp_id : integer;
 begin
@@ -527,7 +561,7 @@ begin
     Close;
   end;
 end;
-
+}
 
 function TDM1.InsertBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean; // temp_id default =-1 --> to exclude bugs
 var
@@ -560,6 +594,7 @@ begin
   end;
 end;
 
+{
 function TDM1.UpdBlockInDB(blk : TBlock; temp_id : integer = -1):boolean;
 begin
   Result := False;
@@ -586,6 +621,7 @@ begin
     Close;
   end;
 end;
+ }
 
 function TDM1.SaveBlocks2DB(blks : TObjectList {list of TBlock}; temp_id : integer = -1):boolean;
 var

@@ -102,7 +102,7 @@ object DM1: TDM1
         ParamType = ptInput
       end>
     Macros = <>
-    DataSource = Users_DS
+    DataSource = CU_DS
     Left = 397
     Top = 83
   end
@@ -134,7 +134,7 @@ object DM1: TDM1
     Left = 557
     Top = 83
   end
-  object Users: TSQLQuery
+  object CurrentUser: TSQLQuery
     FieldDefs = <>
     Database = SQLite3Connection1
     Transaction = SQLTransactionMain
@@ -146,8 +146,8 @@ object DM1: TDM1
     Left = 314
     Top = 83
   end
-  object Users_DS: TDataSource
-    DataSet = Users
+  object CU_DS: TDataSource
+    DataSet = CurrentUser
     Left = 314
     Top = 141
   end
@@ -172,5 +172,22 @@ object DM1: TDM1
     DataSet = Content
     Left = 624
     Top = 141
+  end
+  object Users: TSQLQuery
+    FieldDefs = <>
+    Database = SQLite3Connection1
+    Transaction = SQLTransactionMain
+    SQL.Strings = (
+      'SELECT * FROM users;'
+    )
+    Params = <>
+    Macros = <>
+    Left = 264
+    Top = 224
+  end
+  object Users_DS: TDataSource
+    DataSet = Users
+    Left = 264
+    Top = 282
   end
 end
