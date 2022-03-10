@@ -93,14 +93,9 @@ object DM1: TDM1
     Database = SQLite3Connection1
     Transaction = SQLTransactionMain
     SQL.Strings = (
-      'SELECT * FROM projects WHERE user_id=:id;'
+      ''
     )
-    Params = <    
-      item
-        DataType = ftUnknown
-        Name = 'id'
-        ParamType = ptInput
-      end>
+    Params = <>
     Macros = <>
     DataSource = CU_DS
     Left = 397

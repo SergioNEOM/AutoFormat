@@ -431,15 +431,11 @@ begin
     Free;
   end;
   //TODO: есть сомнения, правильно ли отрабатывает в случае отказа от выбора
-  //self.Caption:= AppHeader + ' : ' + DM1.GetCurrentUserName;
   SetAccessibility;
   //
   self.SetFocus;
   self.BringToFront;
-  //TODO: move into DM within try/except
-  DM1.Projects.Open;
-  DM1.Templates.Open;
-  DM1.Blocks.Open;
+  DM1.RefreshProjects(DM1.GetCurrentUserRole);
 end;
 
 

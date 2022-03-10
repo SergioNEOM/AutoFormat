@@ -19,5 +19,12 @@ begin
   Application.CreateForm(TMainForm1, MainForm1);
   Application.CreateForm(TDM1, DM1);
   Application.Run;
+
+  //TODO: Удаление шаблона реализовать (DM1.DelTemplate)
+
+  //TODO: запись в debug log всех событий
+  //TODO: подготовка к форматированию: шаблон из БД -> в файл
+  //TODO: обычным пользователям д.б видны ВСЕ проекты
+  //TODO: Чистка мусора...
 end.
 

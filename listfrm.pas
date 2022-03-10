@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Buttons, db,
-  DBGrids, StdCtrls;
+  DBGrids, StdCtrls, Grids;
 
 resourcestring
   FormHeader = 'Список пользователей';
@@ -23,9 +23,12 @@ type
     OkButton: TBitBtn;
     Panel1: TPanel;
     procedure AddBitBtnClick(Sender: TObject);
+    procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure DelBitBtnClick(Sender: TObject);
     procedure EditBitBtnClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
 
   public
@@ -74,6 +77,11 @@ begin
   end;
 end;
 
+procedure TUserListForm.FormShow(Sender: TObject);
+begin
+    DBGrid1.SetFocus;
+end;
+
 
 procedure TUserListForm.AddBitBtnClick(Sender: TObject);
 begin
@@ -89,6 +97,45 @@ begin
   end;
 end;
 
+procedure TUserListForm.DBGrid1DrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
+var
+  s : string;
+begin
+  s := '';
+  if (Column.FieldName='superuser') then
+      with TDBGrid(sender).Canvas do
+      begin
+        if Column.Field.AsString='*' then
+        begin
+          s:='Менеджер пользователей';
+          if not (gdSelected in State) then
+          begin
+            Brush.Color:=clWhite;
+            Font.Color:=clRed;
+          end
+          else
+            Font.Style:=Font.Style+[fsBold];
+        end;
+        if Column.Field.AsString='C' then
+        begin
+          s:='Создатель шаблонов';
+          if not (gdSelected in State) then
+          begin
+            Brush.Color:=$CCFFFF;
+            Font.Color:=clBlue;
+          end
+          else
+            Font.Style:=Font.Style+[fsItalic];
+        end;
+        FillRect(Rect);
+        if (Column.Alignment=taRightJustify) then
+          TextOut(Rect.Right-2-TextWidth(s),Rect.Top+2,s)
+        else
+          TextOut(Rect.Left+2,Rect.Top+2,s);
+      end;
+end;
+
 procedure TUserListForm.DelBitBtnClick(Sender: TObject);
 begin
   if not DBGrid1.DataSource.DataSet.Active then Exit;
@@ -99,7 +146,7 @@ begin
   //TODO: проверить, что нет связных записей в других таблицах. Если есть, то доп.запрос на удаление
   if not DM1.DelUser(DBGrid1.DataSource.DataSet.FieldByName('id').AsInteger) then
   begin
-    showmessage('deleting error');
+    showmessage('ошибка удаления пользователя');
     Exit;
   end;
   DBGrid1.DataSource.DataSet.Refresh;

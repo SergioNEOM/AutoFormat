@@ -7,6 +7,7 @@ object UserListForm: TUserListForm
   ClientHeight = 456
   ClientWidth = 629
   OnCreate = FormCreate
+  OnShow = FormShow
   LCLVersion = '2.2.0.4'
   object Panel1: TPanel
     Left = 0
@@ -65,10 +66,29 @@ object UserListForm: TUserListForm
     Align = alClient
     AutoEdit = False
     Color = clWindow
-    Columns = <>
+    Columns = <    
+      item
+        Title.Alignment = taCenter
+        Title.Caption = 'Имя пользователя'
+        Width = 200
+        FieldName = 'username'
+      end    
+      item
+        Title.Alignment = taCenter
+        Title.Caption = 'login'
+        Width = 150
+        FieldName = 'login'
+      end    
+      item
+        Title.Alignment = taCenter
+        Title.Caption = 'Роль'
+        Width = 180
+        FieldName = 'superuser'
+      end>
     DataSource = DM1.Users_DS
     Options = [dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgDisableDelete, dgDisableInsert, dgDisplayMemoText]
     ReadOnly = True
     TabOrder = 1
+    OnDrawColumnCell = DBGrid1DrawColumnCell
   end
 end

@@ -46,7 +46,10 @@ type
     function AddUser(login, pass, username: string; admin: string=''):integer;
     function UpdUser(uid: integer; login, pass, username: string; admin: string=''):boolean;
     function DelUser(user_id:integer=-1):boolean;
+    function UserIsAdmin(user_id:integer=-1):boolean;
+    function AdminsCount:integer;
     //-- projects
+    procedure RefreshProjects(role: integer);
     function AddProject(Info: string='') : integer;
     function GetCurrentProjectId : integer;
     function GetCurrentProjectInfo : string;
@@ -243,7 +246,6 @@ end;
 
 function TDM1.DelUser(user_id:integer=-1):boolean;
 begin
-  //TODO: удалять единственного админа НЕЛЬЗЯ !!
   //TODO: проверки о наличии связных записей провести перед вызовом функции!!!
   Result := False;
   if user_id <=0 then Exit;   //TODO: debug log -> no user to delete
@@ -252,8 +254,13 @@ begin
   // Себя удалять нельзя!!!
   if user_id = GetCurrentUserId then Exit ; //TODO: debug log -> user can't delete yourself
   //
+  //удалять единственного админа НЕЛЬЗЯ !! Для этого:
+  // 1. Проверить, что удаляемый пользователь - админ
+  // 2. посчитать всех админов. Если один, то выход
+  if UserIsAdmin(user_id) and  (AdminsCount=1) then Exit; //raise Exception.Create('Невозможно удалить единственного администратора!');
+  //--
   with SQLQuery1 do
-  begin
+  try
     Close;
     SQL.Clear;
     SQL.Text := 'DELETE FROM users WHERE id=:uid;';
@@ -262,17 +269,96 @@ begin
       ExecSQL;
       if SQLTransaction.Active then SQLTransaction.CommitRetaining;
       Result := True;          //GetLastRowId --??;
-    finally
-      Close;
-    end;
+      //TODO: если ОЧЕНЬ будет надо, то посчитать к-во записей до и после, разница покажет, сколько удалили
+      except
+        if SQLTransaction.Active then SQLTransaction.RollbackRetaining;
+        Result := False;
+      end;
+  finally
+    Close;
   end;
 end;
 
+
+function TDM1.UserIsAdmin(user_id:integer=-1):boolean;
+begin
+  Result := False;
+  if user_id <=0 then Exit;   //TODO: debug log -> no user to delete
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Clear;
+    SQL.Text := 'SELECT * FROM users WHERE id=:uid;';
+    SQLQuery1.ParamByName('uid').AsInteger:=user_id;
+    try
+      Open;
+      if IsEmpty then raise Exception.Create('Ошибка: такой пользователь не найден!');   //TODO: debug log
+      if  FieldByName('superuser').AsString='*' then Result := True;
+    except
+      Result := False;
+      Exit;
+      //TODO: debug log write error
+    end;
+  finally
+    Close;
+  end;
+end;
+
+
+function TDM1.AdminsCount:integer;
+begin
+  Result := 0;
+  with SQLQuery1 do
+  try
+    Close;
+    SQL.Clear;
+    SQL.Text := 'SELECT COUNT(*) as cnt FROM users WHERE superuser=''*'';';
+    try
+      Open;
+      if IsEmpty then raise Exception.Create('Ошибка: администраторы не найдены???');   //TODO: debug log
+      Result := FieldByName('cnt').AsInteger
+    except
+      Result := 0;
+      Exit;
+      //TODO: debug log write error
+    end;
+  finally
+    Close;
+  end;
+end;
 
 
 //***************
 //* Projects
 //***************
+
+procedure TDM1.RefreshProjects(role: integer);
+begin
+  Blocks.Close;
+  Templates.Close;
+  with Projects do
+  try
+    Close;
+    case role of
+      USER_ROLE_DEFAULT:
+        begin
+          DataSource := nil;
+          SQL.Text := 'SELECT * FROM projects;';
+        end;
+      USER_ROLE_CREATOR:
+        begin
+          DataSource := CU_DS;
+          SQL.Text := 'SELECT * FROM projects WHERE user_id=:id;';
+        end;
+      else Exit; //don't open DataSet
+    end;
+    Open;
+    Templates.Open;
+    Blocks.Open;
+  except
+    Close;
+  end;
+end;
 
 function TDM1.AddProject(Info: string='') : integer;
 begin
@@ -768,6 +854,7 @@ function TDM1.DelTemplate(tmp_id: integer=-1):boolean;
 begin
   Result := False;
   if tmp_id<=0 then Exit;
+  //TODO: ...
 end;
 
 
