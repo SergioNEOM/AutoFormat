@@ -569,6 +569,7 @@ begin
     try
       try
         Open;
+        if IsEmpty then Exit;
         First;
         while not EOF do
         begin

@@ -85,7 +85,7 @@ implementation
 
 uses
   {$IFDEF WINDOWS} ComObj, {$ENDIF}
-  LCLType, md5, Dialogs;
+  LCLType, md5, Dialogs, DM;
 
 
 function HashPass(pass: string): string;

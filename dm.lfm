@@ -1,17 +1,18 @@
 object DM1: TDM1
   OldCreateOrder = False
-  Height = 427
-  HorizontalOffset = 446
-  VerticalOffset = 314
-  Width = 691
+  Height = 534
+  HorizontalOffset = 558
+  VerticalOffset = 393
+  Width = 864
+  PPI = 120
   object SQLite3Connection1: TSQLite3Connection
     Connected = False
     LoginPrompt = False
     KeepConnection = False
     CharSet = 'UTF-8'
     AlwaysUseBigint = False
-    Left = 72
-    Top = 24
+    Left = 90
+    Top = 30
   end
   object SQLQuery1: TSQLQuery
     FieldDefs = <>
@@ -19,13 +20,13 @@ object DM1: TDM1
     Transaction = SQLTransactionMain
     Params = <>
     Macros = <>
-    Left = 72
-    Top = 224
+    Left = 90
+    Top = 280
   end
   object DataSource1: TDataSource
     DataSet = SQLQuery1
-    Left = 72
-    Top = 280
+    Left = 90
+    Top = 350
   end
   object Templates: TSQLQuery
     FieldDefs = <>
@@ -42,13 +43,13 @@ object DM1: TDM1
       end>
     Macros = <>
     DataSource = Projects_DS
-    Left = 480
-    Top = 83
+    Left = 600
+    Top = 104
   end
   object Temp_DS: TDataSource
     DataSet = Templates
-    Left = 480
-    Top = 141
+    Left = 600
+    Top = 176
   end
   object SQLScript1: TSQLScript
     DataBase = SQLite3Connection1
@@ -73,20 +74,20 @@ object DM1: TDM1
     UseSetTerm = True
     UseCommit = True
     UseDefines = True
-    Left = 186
-    Top = 96
+    Left = 233
+    Top = 120
   end
   object TranScript: TSQLTransaction
     Active = False
     Database = SQLite3Connection1
-    Left = 186
-    Top = 152
+    Left = 233
+    Top = 190
   end
   object SQLTransactionMain: TSQLTransaction
     Active = False
     Database = SQLite3Connection1
-    Left = 186
-    Top = 26
+    Left = 233
+    Top = 33
   end
   object Projects: TSQLQuery
     FieldDefs = <>
@@ -98,18 +99,18 @@ object DM1: TDM1
     Params = <>
     Macros = <>
     DataSource = CU_DS
-    Left = 397
-    Top = 83
+    Left = 496
+    Top = 104
   end
   object Projects_DS: TDataSource
     DataSet = Projects
-    Left = 397
-    Top = 141
+    Left = 496
+    Top = 176
   end
   object Blocks_DS: TDataSource
     DataSet = Blocks
-    Left = 557
-    Top = 141
+    Left = 696
+    Top = 176
   end
   object Blocks: TSQLQuery
     FieldDefs = <>
@@ -126,8 +127,8 @@ object DM1: TDM1
       end>
     Macros = <>
     DataSource = Temp_DS
-    Left = 557
-    Top = 83
+    Left = 696
+    Top = 104
   end
   object CurrentUser: TSQLQuery
     FieldDefs = <>
@@ -138,13 +139,13 @@ object DM1: TDM1
     )
     Params = <>
     Macros = <>
-    Left = 314
-    Top = 83
+    Left = 393
+    Top = 104
   end
   object CU_DS: TDataSource
     DataSet = CurrentUser
-    Left = 314
-    Top = 141
+    Left = 393
+    Top = 176
   end
   object Content: TSQLQuery
     FieldDefs = <>
@@ -160,13 +161,13 @@ object DM1: TDM1
         ParamType = ptInput
       end>
     Macros = <>
-    Left = 624
-    Top = 83
+    Left = 780
+    Top = 104
   end
   object Content_DS: TDataSource
     DataSet = Content
-    Left = 624
-    Top = 141
+    Left = 780
+    Top = 176
   end
   object Users: TSQLQuery
     FieldDefs = <>
@@ -177,12 +178,12 @@ object DM1: TDM1
     )
     Params = <>
     Macros = <>
-    Left = 264
-    Top = 224
+    Left = 330
+    Top = 280
   end
   object Users_DS: TDataSource
     DataSet = Users
-    Left = 264
-    Top = 282
+    Left = 330
+    Top = 353
   end
 end

@@ -117,7 +117,7 @@ end;
 
 procedure TBlocksForm.BlockAfterScrollWrapper(DataSet: TDataSet);
 begin
-  StaticText1.Caption := DataSet.FieldByName('blockinfo').AsString;
+  //StaticText1.Caption := DataSet.FieldByName('blockinfo').AsString;
 end;
 
 procedure TBlocksForm.CloseButtonClick(Sender: TObject);
@@ -189,11 +189,11 @@ begin
       end;
     USER_ROLE_DEFAULT:
       begin
-        with InputMemoForm.Create(self) do
+        with TInputMemoForm.Create(self) do
         try
           if ShowModal=mrOk then
           begin
-            if DM1.AddContent2DB(DM1.GetCurrentUserId, DM1.GetCurrentBlockId, InputMemoForm.Memo1.Text, True)>0 then
+            if DM1.AddContent2DB(DM1.GetCurrentUserId, DM1.GetCurrentBlockId, Memo1.Text, True)>0 then
               showmessage('content saved');
           end;
         finally

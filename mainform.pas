@@ -89,7 +89,7 @@ var
 implementation
 
 {$R *.lfm}
-uses  StrUtils, LCLType, IniFiles, LoginFrm, ListFrm, GetFileFrm, Blockfrm;
+uses  StrUtils, LCLType, IniFiles, db, LoginFrm, ListFrm, GetFileFrm, Blockfrm;
 
 
 procedure TMainForm1.FormCreate(Sender: TObject);
@@ -177,6 +177,7 @@ begin
       begin
         FillDocAction.Enabled:=True;
         FormatAction.Enabled:=True;
+        EditTmpAction.Enabled := True; //edit content
       end;
   end;
 end;
@@ -254,9 +255,34 @@ begin
 end;
 
 procedure TMainForm1.FormatActionExecute(Sender: TObject);
+var
+  curtemp : integer;
+  targetDir: String;
+  tb : TBlobField;
 begin
-  //TODO: ???
-  //TaskForm.Format(1,ExpandFileName('Lorem ipsum.docx'),0{Word});
+  //TODO: target directory: set in config file
+  targetDir:='e:/ddd/';
+  with DM1.Templates do
+  begin
+    if IsEmpty then Exit;
+    First;
+    while not EOF do
+    begin
+      //TODO: TThread
+      curtemp:=FieldByName('id').AsInteger;
+      fname := targetDir+'tmp#'+Trim(IntToStr(curtemp))+'.doc';
+      tb := FieldByName('tmp');
+      if tb.BlobSize>0 then
+      begin
+        //TODO: if FileExists(fname) then ... debug log
+        tb.SaveToFile(fname);
+        //TODO: if not FileExists(fname) then ... debug log -> file create error
+        //TODO:  FileFormat(fname,curtemp,0 {Word});
+        // select b.blockname, c.conttext from blocks b, content c where b.tmp_id=:curtemp and c.block_id=b.id
+      end;
+      Next;
+    end;
+  end;
 end;
 
 
