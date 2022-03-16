@@ -31,3 +31,5 @@ lib/
 # Application bundle for Mac OS
 *.app/
 
+# target dir
+target/

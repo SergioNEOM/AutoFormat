@@ -77,6 +77,7 @@ type
     function GetConfigValues : boolean;
     procedure SetAccessibility;
   public
+    TargetDir,
     DBFile,
     ConfigFile               : string;
     CurrentBlock   : TBlock;
@@ -257,11 +258,12 @@ end;
 procedure TMainForm1.FormatActionExecute(Sender: TObject);
 var
   curtemp : integer;
-  targetDir: String;
   tb : TBlobField;
+  fname,
+  FinalDir: string;
 begin
-  //TODO: target directory: set in config file
-  targetDir:='e:/ddd/';
+  //TODO: select templates to write????
+  //target directory: set in config file
   with DM1.Templates do
   begin
     if IsEmpty then Exit;
@@ -270,19 +272,27 @@ begin
     begin
       //TODO: TThread
       curtemp:=FieldByName('id').AsInteger;
-      fname := targetDir+'tmp#'+Trim(IntToStr(curtemp))+'.doc';
-      tb := FieldByName('tmp');
-      if tb.BlobSize>0 then
-      begin
-        //TODO: if FileExists(fname) then ... debug log
-        tb.SaveToFile(fname);
-        //TODO: if not FileExists(fname) then ... debug log -> file create error
-        //TODO:  FileFormat(fname,curtemp,0 {Word});
-        // select b.blockname, c.conttext from blocks b, content c where b.tmp_id=:curtemp and c.block_id=b.id
+      FinalDir := TargetDir+FormatDateTime('yyyymmdd_hhnn',now,[])+'/';
+      try
+        if not DirectoryExists(FinalDir) then CreateDir(FinalDir);
+        fname := FinalDir+'tmp#'+Trim(IntToStr(curtemp))+'.doc';
+        tb := TBlobField(FieldByName('tmp'));
+        if tb.BlobSize>0 then
+        begin
+          //TODO: if FileExists(fname) then ... debug log
+          tb.SaveToFile(fname);
+          //TODO: if not FileExists(fname) then ... debug log -> file create error
+          WordWrite(fname,curtemp );      //TODO: вызвать универсальную процедуру (с параметром, {, 0 - Word})
+          //TODO: if not WordWrite ... ??
+        end;
+      except
+        showmessage('error create file');
+        Exit;
       end;
       Next;
     end;
   end;
+  showmessage('process finished');
 end;
 
 
@@ -301,16 +311,20 @@ function TMainForm1.GetConfigValues : boolean;
 var
   cofi : TIniFile;
 begin
+  //TODO: вместо Result := False лучше try/except/raise?
   Result := False;
+  TargetDir:='./';
   //---
   DBFile :=  Application.GetOptionValue('d','dbfile');
   if IsEmptyStr(DBFile,[' ']) or not FileExists(ExpandFileName(DBFile)) then
   begin
     // не передан как параметр или указан несуществующий файл БД, значит берем из конфиг-файла
     cofi := TIniFile.Create(ConfigFile);
+    TargetDir := ExpandFileName(cofi.ReadString('common','TargetDir','./'));
     DBFile := ExpandFileName(cofi.ReadString('db','DBFile',''));
     if not FileExists(DBFile) then Exit;
   end;
+  if not DirectoryExists(TargetDir) then CreateDir(TargetDir); //TODO: error analyse...
   //...
   Result := True;
 end;

@@ -80,6 +80,7 @@ type
 
   function HashPass(pass:string):string;
   function WordScan2DB(tmp_id:integer; FN:string; Gauge: TProgressBar=nil):integer;
+  function WordWrite(fname: string; tmp_id:integer):boolean;
 
 implementation
 
@@ -212,6 +213,102 @@ begin
   ShowMessage('Function "WordScanFile" can only work in the Windows');
 end;
 {$ENDIF}
+
+
+function WordWrite(fname: string; tmp_id:integer):boolean;
+{$IFDEF WINDOWS}
+var
+   WA : OleVariant;
+   i, c , cc : Integer;
+   doCycle : boolean;
+   seekStr, replaceStr : string;
+begin
+  Result := False;
+  if tmp_id<=0 then Exit; //TODO: debug log
+  try
+    //***---
+    DM1.SQLQuery1.Close;
+    DM1.SQLQuery1.SQL.Text := 'SELECT b.blockname, c.conttext FROM blocks b, content c WHERE b.tmp_id=:curtemp and c.block_id=b.id';
+    DM1.SQLQuery1.ParamByName('curtemp').AsInteger := tmp_id;
+    try
+      DM1.SQLQuery1.Open;
+      if DM1.SQLQuery1.IsEmpty then raise Exception.Create('no records to fill');
+    except
+       //TODO: no records to fill  -> debug log
+       Exit;
+    end;
+    //****
+    try
+       WA := CreateOLEObject('Word.Application');
+    except
+       MessageDlg('Ошибка','Не могу начать работу с MS Word ('+fname+')',mtError,[mbOk],'');
+       Exit;
+    end;
+    //***---
+    WA.Visible := False;
+    WA.Caption := 'AutoFormat: fill Word document';
+    WA.ScreenUpdating := False;
+    WA.Documents.Open(fname);
+    WA.ActiveWindow.View.&Type := 3 { wdPageView };
+    doCycle:=True;
+    for c:=0 to 8 do  // 9 и 10 - не используются?
+    begin
+      if not doCycle then break;
+      // если флаг "колонтитул первой страницы" НЕ установлен, пропустить 2 и 5
+      if not WA.ActiveDocument.PageSetup.DifferentFirstPageHeaderFooter and
+          ((c = wdSeekFirstPageFooter) or (c = wdSeekFirstPageHeader)) then continue;
+      // если флаг "различать колонтитулы четных и нечетных страниц" НЕ установлен, пропустить 3 и 6
+      if not WA.Activedocument.PageSetup.OddAndEvenPagesHeaderFooter and
+          ((c = wdSeekEvenPagesHeader) or (c = wdSeekEvenPagesFooter)) then continue;
+      //
+      try
+        WA.ActiveWindow.View.SeekView := c;
+        //WA.ActiveWindow.ActivePane.View.SeekView := c;
+      except
+        // скорее всего, такой секции нет в документе
+        continue;
+      end;
+      while doCycle do
+      begin
+        DM1.SQLQuery1.First;
+        while not DM1.SQLQuery1.EOF do
+        begin
+          seekStr := DM1.SQLQuery1.FieldByName('blockname').AsString;
+          replaceStr := DM1.SQLQuery1.FieldByName('conttext').AsString;
+          //***************
+          WA.Selection.Find.ClearFormatting;
+          WA.Selection.Find.Text := seekStr;
+          WA.Selection.Find.Replacement.Text := replaceStr;
+          WA.Selection.Find.Forward := True;
+          WA.Selection.Find.Wrap := wdFindStop;
+          //WA.Selection.Find.Format := True;
+          WA.Selection.Find.Format := False;
+          WA.Selection.Find.MatchCase := False;
+          WA.Selection.Find.MatchWildCards := False;
+          WA.Selection.Find.MatchWholeWord := False;
+          WA.Selection.Find.MatchSoundsLike := False;
+          WA.Selection.Find.MatchAllWordForms := False;
+          WA.Selection.Find.Execute(Replace := 2 { wdReplaceAll } );
+          //***************
+          DM1.SQLQuery.Next;
+        end; //while not EOF
+      end; // while doCycle
+    end;  //  for c
+    WA.ActiveWindow.ActivePane.View.SeekView := Integer(wdSeekMainDocument);
+  finally
+     DM1.SQLQuery1.Close;
+     //***---
+     WA.ActiveDocument.Close;    //TODO: не вызовет ли ошибку, если файл не сохранён?
+     WA.ScreenUpdating := True;
+     WA.Quit;
+  end;
+end;
+{$ELSE}
+begin
+  ShowMessage('Function "WordWrite" can only work in the Windows');
+end;
+{$ENDIF}
+
 
 
 //--------------------
