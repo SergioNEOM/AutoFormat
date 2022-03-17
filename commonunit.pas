@@ -225,26 +225,27 @@ var
 begin
   Result := False;
   if tmp_id<=0 then Exit; //TODO: debug log
+  //***---
+  DM1.SQLQuery1.Close;
+  DM1.SQLQuery1.SQL.Text := 'SELECT b.blockname, c.conttext FROM blocks b, content c WHERE b.tmp_id=:curtemp and c.block_id=b.id';
+  DM1.SQLQuery1.ParamByName('curtemp').AsInteger := tmp_id;
   try
-    //***---
-    DM1.SQLQuery1.Close;
-    DM1.SQLQuery1.SQL.Text := 'SELECT b.blockname, c.conttext FROM blocks b, content c WHERE b.tmp_id=:curtemp and c.block_id=b.id';
-    DM1.SQLQuery1.ParamByName('curtemp').AsInteger := tmp_id;
-    try
-      DM1.SQLQuery1.Open;
-      if DM1.SQLQuery1.IsEmpty then raise Exception.Create('no records to fill');
-    except
-       //TODO: no records to fill  -> debug log
-       Exit;
-    end;
-    //****
-    try
-       WA := CreateOLEObject('Word.Application');
-    except
-       MessageDlg('Ошибка','Не могу начать работу с MS Word ('+fname+')',mtError,[mbOk],'');
-       Exit;
-    end;
-    //***---
+    DM1.SQLQuery1.Open;
+    if DM1.SQLQuery1.IsEmpty then raise Exception.Create('no records to fill');
+  except
+    //TODO: no records to fill  -> debug log
+    showmessage('content open error');
+    Exit;
+  end;
+  //****
+  try
+     WA := CreateOLEObject('Word.Application');
+  except
+     MessageDlg('Ошибка','Не могу начать работу с MS Word ('+fname+')',mtError,[mbOk],'');
+     Exit;
+  end;
+  //***---
+  try
     WA.Visible := False;
     WA.Caption := 'AutoFormat: fill Word document';
     WA.ScreenUpdating := False;
@@ -288,9 +289,9 @@ begin
           WA.Selection.Find.MatchWholeWord := False;
           WA.Selection.Find.MatchSoundsLike := False;
           WA.Selection.Find.MatchAllWordForms := False;
-          WA.Selection.Find.Execute(Replace := 2 { wdReplaceAll } );
+          if not WA.Selection.Find.Execute(Replace := 2 { wdReplaceAll }) then doCycle:=False;
           //***************
-          DM1.SQLQuery.Next;
+          DM1.SQLQuery1.Next;
         end; //while not EOF
       end; // while doCycle
     end;  //  for c
@@ -313,11 +314,6 @@ end;
 
 //--------------------
 {
-unit afmain;
-
-{$mode objfpc}{$H+}
-
-interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, EditBtn, StdCtrls;

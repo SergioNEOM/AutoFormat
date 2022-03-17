@@ -261,36 +261,43 @@ var
   tb : TBlobField;
   fname,
   FinalDir: string;
+  sc : TCursor;
 begin
-  //TODO: select templates to write????
+  //TODO: select templates to write????      CheckList?
   //target directory: set in config file
-  with DM1.Templates do
-  begin
-    if IsEmpty then Exit;
-    First;
-    while not EOF do
+  sc := GetCursor; // save prev cursor
+  try
+    self.Cursor := crHourGlass;
+    with DM1.Templates do
     begin
-      //TODO: TThread
-      curtemp:=FieldByName('id').AsInteger;
-      FinalDir := TargetDir+FormatDateTime('yyyymmdd_hhnn',now,[])+'/';
-      try
-        if not DirectoryExists(FinalDir) then CreateDir(FinalDir);
-        fname := FinalDir+'tmp#'+Trim(IntToStr(curtemp))+'.doc';
-        tb := TBlobField(FieldByName('tmp'));
-        if tb.BlobSize>0 then
-        begin
-          //TODO: if FileExists(fname) then ... debug log
-          tb.SaveToFile(fname);
-          //TODO: if not FileExists(fname) then ... debug log -> file create error
-          WordWrite(fname,curtemp );      //TODO: вызвать универсальную процедуру (с параметром, {, 0 - Word})
-          //TODO: if not WordWrite ... ??
+      if IsEmpty then Exit;
+      First;
+      while not EOF do
+      begin
+        //TODO: TThread
+        curtemp:=FieldByName('id').AsInteger;
+        FinalDir := TargetDir+FormatDateTime('yyyymmdd_hhnn',now,[])+'/';
+        try
+          if not DirectoryExists(FinalDir) then CreateDir(FinalDir);
+          fname := FinalDir+'tmp#'+Trim(IntToStr(curtemp))+'.doc';
+          tb := TBlobField(FieldByName('tmp'));
+          if tb.BlobSize>0 then
+          begin
+            //TODO: if FileExists(fname) then ... debug log
+            tb.SaveToFile(fname);
+            //TODO: if not FileExists(fname) then ... debug log -> file create error
+            WordWrite(fname,curtemp );      //TODO: вызвать универсальную процедуру (с параметром, {, 0 - Word})
+            //TODO: if not WordWrite ... ??
+          end;
+        except
+          showmessage('error create file');
+          Exit;
         end;
-      except
-        showmessage('error create file');
-        Exit;
+        Next;
       end;
-      Next;
     end;
+  finally
+    self.Cursor := sc;
   end;
   showmessage('process finished');
 end;
